@@ -2,18 +2,22 @@
 import { signIn, useSession } from "next-auth/react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
+import { useEffect } from "react";
 export default function Home() {
   const { data, status } = useSession();
   const router = useRouter();
-  if (
-    status === "authenticated" &&
-    typeof window !== "undefined" &&
-    window.localStorage.getItem("skipCarRegister") === "true"
-  ) {
-    router.push("/homepage");
-  } else {
-    router.push("/question");
-  }
+
+  useEffect(() => {
+    if (
+      status === "authenticated" &&
+      window.localStorage.getItem("skipCarRegister") === "true"
+    ) {
+      router.push("/homepage");
+    } else if (status === "authenticated") {
+      router.push("/question");
+    }
+  }, [status, data]);
+
   return (
     <main className="bg-background flex items-center justify-center h-full">
       <div className="flex flex-col items-center justify-around h-screen dark:bg-gray-800">

@@ -1,40 +1,27 @@
-"use client";
-import { Form, FormField, FormItem } from "@/components/ui/form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
-import * as z from "zod";
+import { getCars } from "./_actions/getCars";
+import { getCities } from "./_actions/getCities";
+import RegisterForm from "./_components/RegisterForm";
 
-const formSchema = z.object({
-  brand: z.number(),
-  model: z.number(),
-});
+export type carsType = {
+  codigo: string;
+  nome: string;
+};
 
-export default function Register() {
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
-    defaultValues: {
-      brand: 0,
-      model: 0,
-    },
-  });
+export type citiesType = {
+  id: number;
+  nome: string;
+};
 
-  const handleSubmit = () => {};
+export default async function Register() {
+  const brands: carsType[] = await getCars();
+  const cities: citiesType[] = await getCities();
+
   return (
     <main className="flex flex-col gap-5">
       <header>
         <h1 className="font-bold text-2xl p-2">IF Passenger</h1>
       </header>
-      <Form {...form}>
-        <form onSubmit={form.handleSubmit(handleSubmit)}>
-          <FormField
-            name="brand"
-            control={form.control}
-            render={({ field }) => {
-              return <FormItem></FormItem>;
-            }}
-          />
-        </form>
-      </Form>
+      <RegisterForm brands={brands} cities={cities} />
     </main>
   );
 }

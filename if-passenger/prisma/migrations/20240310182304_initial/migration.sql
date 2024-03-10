@@ -4,7 +4,11 @@ CREATE TABLE "User" (
     "name" TEXT,
     "email" TEXT,
     "emailVerified" DATETIME,
-    "image" TEXT
+    "image" TEXT,
+    "courseId" TEXT NOT NULL,
+    "cityId" INTEGER NOT NULL,
+    CONSTRAINT "User_courseId_fkey" FOREIGN KEY ("courseId") REFERENCES "Course" ("id") ON DELETE RESTRICT ON UPDATE CASCADE,
+    CONSTRAINT "User_cityId_fkey" FOREIGN KEY ("cityId") REFERENCES "City" ("id") ON DELETE RESTRICT ON UPDATE CASCADE
 );
 
 -- CreateTable
@@ -43,12 +47,25 @@ CREATE TABLE "VerificationToken" (
 -- CreateTable
 CREATE TABLE "Car" (
     "id" TEXT NOT NULL PRIMARY KEY,
-    "brand" INTEGER NOT NULL,
-    "model" INTEGER NOT NULL,
+    "brand" TEXT NOT NULL,
+    "model" TEXT NOT NULL,
     "year" TEXT NOT NULL,
     "passengers" INTEGER NOT NULL,
     "userId" TEXT NOT NULL,
+    "licensePlate" TEXT NOT NULL,
     CONSTRAINT "Car_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User" ("id") ON DELETE RESTRICT ON UPDATE CASCADE
+);
+
+-- CreateTable
+CREATE TABLE "City" (
+    "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    "name" TEXT NOT NULL
+);
+
+-- CreateTable
+CREATE TABLE "Course" (
+    "id" TEXT NOT NULL PRIMARY KEY,
+    "name" TEXT NOT NULL
 );
 
 -- CreateIndex
