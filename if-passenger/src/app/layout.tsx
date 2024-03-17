@@ -1,7 +1,6 @@
 import { Toaster } from "@/components/ui/sonner";
 import type { Metadata } from "next";
 import { Raleway } from "next/font/google";
-import AuthProvider from "./_providers/auth";
 import "./globals.css";
 
 const raleway = Raleway({ subsets: ["latin"] });
@@ -19,7 +18,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={raleway.className}>
-        <AuthProvider>{children}</AuthProvider>
+        {children}
         <Toaster />
       </body>
     </html>

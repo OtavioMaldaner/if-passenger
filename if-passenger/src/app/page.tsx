@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { toast } from "sonner";
 import { api } from "./api";
+import { salvarTokenNoCookie } from "./api/functions";
 import { auth } from "./services/auth/firebase";
 export default function Home() {
   const router = useRouter();
@@ -18,7 +19,14 @@ export default function Home() {
       imageUrl: result.user.photoURL,
     });
     if (request.status === 200) {
-      router.push("/register");
+      const { token } = request.data;
+      if (salvarTokenNoCookie(token)) {
+        router.push("/question");
+      } else {
+        toast.error("Erro ao salvar o token de autenticação!", {
+          description: "Tente novamente mais tarde e avise um desenvolvedor!",
+        });
+      }
     } else {
       toast.error("Erro ao autenticar com o Google", {
         description: "Tente novamente mais tarde e avise um desenvolvedor!",
