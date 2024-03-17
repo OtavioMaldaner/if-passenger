@@ -35,6 +35,9 @@ const formSchema = z.object({
     .refine((value) => /^[A-Z]{3}[0-9][A-Z][0-9]{2}$/i.test(value), {
       message: "A placa deve seguir o formato AAA9A99",
     }),
+  city: z.string().refine((value) => value !== "0", {
+    message: "A cidade é obrigatória.",
+  }),
 });
 
 export default function RegisterForm({
@@ -50,11 +53,13 @@ export default function RegisterForm({
       brand: "0",
       model: "0",
       licensePlate: undefined,
+      city: "0",
     },
   });
 
   const hasBrand = form.watch("brand");
   const hasModel = form.watch("model");
+  const hasCity = form.watch("city");
 
   const handleSubmit = (values: z.infer<typeof formSchema>) => {
     console.log({ values });
@@ -171,6 +176,40 @@ export default function RegisterForm({
                   placeholder="Insira a placa do seu carro"
                 />
               </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          name="city"
+          control={form.control}
+          render={({ field }) => (
+            <FormItem>
+              <Select
+                onValueChange={(value) => {
+                  field.onChange({ target: { value } });
+                }}
+                value={field.value}
+              >
+                <FormControl>
+                  <SelectTrigger>
+                    {hasCity && hasCity != "0" ? (
+                      <SelectValue>{field.value}</SelectValue>
+                    ) : (
+                      <SelectValue>
+                        Selecione a cidade que mais frequenta
+                      </SelectValue>
+                    )}
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  {cities.map((city) => (
+                    <SelectItem key={city.id} value={city.nome}>
+                      {city.nome}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
               <FormMessage />
             </FormItem>
           )}

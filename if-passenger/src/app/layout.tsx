@@ -1,3 +1,4 @@
+import { Toaster } from "@/components/ui/sonner";
 import type { Metadata } from "next";
 import { Raleway } from "next/font/google";
 import AuthProvider from "./_providers/auth";
@@ -19,6 +20,7 @@ export default function RootLayout({
     <html lang="en">
       <body className={raleway.className}>
         <AuthProvider>{children}</AuthProvider>
+        <Toaster />
       </body>
     </html>
   );
