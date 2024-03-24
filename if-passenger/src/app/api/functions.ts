@@ -13,7 +13,7 @@ export function salvarTokenNoCookie(token: string): boolean {
     }
 }
 
-export function getDecodedToken(): JWTToken | false {
+export function getDecodedToken(): JWTToken | any {
     const token = Cookie.get("user_token");
     if (token) {
         try {
@@ -22,8 +22,12 @@ export function getDecodedToken(): JWTToken | false {
                 return decodedToken;
             }
         } catch (error) {
-            return false;
+            return error;
         }
     }
-    return false
-} 
+    return
+}
+
+export function logOut(): void {
+    document.cookie = 'user_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+}
