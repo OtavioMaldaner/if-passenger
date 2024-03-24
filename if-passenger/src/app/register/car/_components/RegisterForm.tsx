@@ -1,7 +1,7 @@
 "use client";
 import { api } from "@/app/api";
 import { salvarTokenNoCookie } from "@/app/api/functions";
-import { citiesType, courseType } from "@/app/api/types";
+import { carsType, citiesType, courseType } from "@/app/api/types";
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -18,60 +18,62 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Cookie from "js-cookie";
 import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import * as z from "zod";
 
 const formSchema = z.object({
-  city: z.string().refine((value) => value !== "0", {
-    message: "A cidade é obrigatória.",
+  brand: z.string().refine((value) => value !== "0", {
+    message: "A marca é obrigatória.",
   }),
-  course: z.string().uuid(),
-  registrationNumber: z
+  model: z.string().refine((value) => value !== "0", {
+    message: "O modelo é obrigatório.",
+  }),
+  licensePlate: z
     .string()
-    .max(10, "A matrícula deve ter 10 dígitos")
-    .min(10, "A matrícula deve ter 10 dígitos")
-    .refine((value) => /^[0-9]{10}$/i.test(value), {
-      message: "A matrícula deve conter 10 dígitos numéricos!",
+    .max(7, "A placa deve ter 7 dígitos")
+    .min(7, "A placa deve ter 7 dígitos")
+    .refine((value) => /^[A-Z]{3}[0-9][A-Z][0-9]{2}$/i.test(value), {
+      message: "A placa deve seguir o formato AAA9A99",
     }),
-  description: z.string().optional(),
+  capacity: z.string().refine(
+    (value) => {
+      const numberValue = Number(value);
+      return numberValue > 0 && numberValue < 7;
+    },
+    {
+      message: "A capacidade deve ser um número positivo menor que 7.",
+    }
+  ),
 });
 
-export default function RegisterForm({
-  cities,
-  courses,
-}: {
-  cities: citiesType[];
-  courses: courseType[];
-}) {
+export default function RegisterForm({ brands }: { brands: carsType[] }) {
   const router = useRouter();
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      city: "0",
-      course: "",
-      registrationNumber: "",
-      description: "",
+      brand: "0",
+      model: "0",
+      licensePlate: undefined,
+      capacity: "",
     },
   });
 
-  const hasCity = form.watch("city");
-  const hasCourse = form.watch("course");
-
-  const cityId = cities.find((city) => city.nome == hasCity)?.id;
+  const hasBrand = form.watch("brand");
+  const hasModel = form.watch("model");
 
   const handleSubmit = async (values: z.infer<typeof formSchema>) => {
     const req = await api.post(
-      "/register/user",
+      "/register/car",
       {
-        cityId: cityId,
-        city: hasCity,
-        course: values.course,
-        registerNumber: Number(values.registrationNumber),
+        brand: userCar.brand,
+        model: userCar.model,
+        licensePlate: values.licensePlate,
+        passengers: Number(values.capacity),
       },
       {
         headers: {
@@ -96,72 +98,60 @@ export default function RegisterForm({
     }
   };
 
-  const handleSubmitAndRegisterCar = async (
-    values: z.infer<typeof formSchema>
-  ) => {
-    const req = await api.post(
-      "/register/user",
-      {
-        cityId: cityId,
-        city: hasCity,
-        course: values.course,
-        registerNumber: Number(values.registrationNumber),
-      },
-      {
-        headers: {
-          Authorization: `Bearer ${Cookie.get("user_token")}`,
-        },
-      }
-    );
-    if (req.status === 200 || req.status === 201) {
-      toast("Cadastro realizado com sucesso!");
-      const { token } = req.data;
-      if (salvarTokenNoCookie(token)) {
-        router.push("/register/car");
-      } else {
-        toast.error("Erro ao salvar o token de autenticação!", {
-          description: "Tente novamente mais tarde e avise um desenvolvedor!",
-        });
-      }
-    } else {
-      toast.error("Erro ao realizar o cadastro!", {
-        description: "Tente novamente mais tarde e avise um desenvolvedor!",
-      });
-    }
-  };
+  const [userCar, setUserCar] = useState<{
+    brand: string;
+    model: string;
+  }>({ brand: "", model: "" });
+
+  const [models, setModels] = useState<carsType[]>([]);
+
+  useEffect(() => {
+    fetch(
+      `https://parallelum.com.br/fipe/api/v1/carros/marcas/${hasBrand}/modelos`
+    )
+      .then((res) => res.json())
+      .then((data) => setModels(data.modelos));
+  }, [hasBrand]);
+
   return (
     <Form {...form}>
       <div className="flex w-screen justify-center">
         <form
           className="text-white flex flex-col gap-7 max-w-xs"
-          // onSubmit={form.handleSubmit(handleSubmit)}
+          onSubmit={form.handleSubmit(handleSubmit)}
         >
           <FormField
-            name="city"
+            name="brand"
             control={form.control}
             render={({ field }) => (
               <FormItem>
                 <Select
                   onValueChange={(value) => {
                     field.onChange({ target: { value } });
+                    const selectedBrand = brands.find(
+                      (brand) => brand.codigo == value
+                    );
+                    if (selectedBrand) {
+                      setUserCar({ brand: selectedBrand.nome, model: "" });
+                    }
                   }}
                   value={field.value}
                 >
                   <FormControl>
                     <SelectTrigger>
-                      {hasCity && hasCity != "0" ? (
-                        <SelectValue>{field.value}</SelectValue>
+                      {hasBrand && hasBrand != "0" ? (
+                        <SelectValue>{userCar.brand}</SelectValue>
                       ) : (
                         <SelectValue>
-                          Selecione a cidade que mais frequenta
+                          Selecione a marca do seu carro
                         </SelectValue>
                       )}
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    {cities.map((city) => (
-                      <SelectItem key={city.id} value={city.nome}>
-                        {city.nome}
+                    {brands.map((brand) => (
+                      <SelectItem key={brand.codigo} value={brand.codigo}>
+                        {brand.nome}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -171,36 +161,41 @@ export default function RegisterForm({
             )}
           />
           <FormField
-            name="course"
+            name="model"
             control={form.control}
             render={({ field }) => (
               <FormItem>
                 <Select
+                  disabled={!hasBrand || hasBrand == "0"}
                   onValueChange={(value) => {
                     field.onChange({ target: { value } });
+                    const selectedModel = models.find(
+                      (model) => model.codigo == value
+                    );
+                    if (selectedModel) {
+                      setUserCar({ ...userCar, model: selectedModel.nome });
+                    }
                   }}
                   value={field.value}
                 >
                   <FormControl>
                     <SelectTrigger>
-                      {hasCourse && hasCourse != "" ? (
-                        <SelectValue>
-                          {
-                            courses.find((course) => field.value == course.id)
-                              ?.name
-                          }
-                        </SelectValue>
+                      {hasModel && hasModel != "0" && userCar.model !== "" ? (
+                        <SelectValue>{userCar.model}</SelectValue>
                       ) : (
-                        <SelectValue>Selecione seu curso</SelectValue>
+                        <SelectValue>
+                          Selecione o modelo do seu carro
+                        </SelectValue>
                       )}
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    {courses.map((course) => (
-                      <SelectItem key={course.id} value={course.id}>
-                        {course.name}
-                      </SelectItem>
-                    ))}
+                    {models &&
+                      models.map((model) => (
+                        <SelectItem key={model.codigo} value={model.codigo}>
+                          {model.nome}
+                        </SelectItem>
+                      ))}
                   </SelectContent>
                 </Select>
                 <FormMessage />
@@ -208,7 +203,26 @@ export default function RegisterForm({
             )}
           />
           <FormField
-            name="registrationNumber"
+            name="licensePlate"
+            control={form.control}
+            render={({ field }) => (
+              <FormItem>
+                <FormControl>
+                  <Input
+                    {...field}
+                    onChange={(e) => {
+                      e.target.value = e.target.value.toUpperCase();
+                      field.onChange(e);
+                    }}
+                    placeholder="Insira a placa do seu carro"
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            name="capacity"
             control={form.control}
             render={({ field }) => (
               <FormItem>
@@ -218,42 +232,16 @@ export default function RegisterForm({
                     onChange={(e) => {
                       field.onChange(e);
                     }}
-                    placeholder="Insira o seu número de matrícula"
+                    placeholder="Insira a capacidade do seu carro"
                   />
                 </FormControl>
                 <FormMessage />
               </FormItem>
             )}
           />
-          <FormField
-            name="description"
-            control={form.control}
-            render={({ field }) => (
-              <FormItem>
-                <FormControl>
-                  <Textarea
-                    {...field}
-                    onChange={(e) => {
-                      field.onChange(e);
-                    }}
-                    placeholder="Insira uma descrição"
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <div className="flex justify-between flex-row-reverse">
-            <Button onClick={() => handleSubmit(form.getValues())}>
-              Enviar
-            </Button>
-            <Button
-              variant="outline"
-              onClick={() => handleSubmitAndRegisterCar(form.getValues())}
-            >
-              Registrar Veículo
-            </Button>
-          </div>
+          <Input disabled placeholder="Insira a média de consumo em Km/L" />
+          <Input disabled placeholder="Selecione o tipo de combustível" />
+          <Button type="submit">Enviar</Button>
         </form>
       </div>
     </Form>
