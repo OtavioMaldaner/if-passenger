@@ -22,4 +22,6 @@ export type JWTToken = {
   exp: number,
   sub: string,
   iat: number,
+  finishedRegister: boolean,
+  description: string | null
 }

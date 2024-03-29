@@ -17,7 +17,7 @@ export default function Header({ children }: { children?: React.ReactNode }) {
   const token: JWTToken = getDecodedToken();
   const router = useRouter();
   return (
-    <header className="flex justify-between items-center p-4">
+    <header className="flex justify-between items-center p-4 w-full">
       <Sheet>
         <SheetTrigger asChild>
           <Image
@@ -26,7 +26,7 @@ export default function Header({ children }: { children?: React.ReactNode }) {
             height={50}
             width={50}
             quality={100}
-            className="rounded-full"
+            className="rounded-full max-h-[50px] max-w-[50px] h-[50px]"
           />
         </SheetTrigger>
         <SheetContent side="left">
@@ -38,10 +38,10 @@ export default function Header({ children }: { children?: React.ReactNode }) {
                 height={50}
                 width={50}
                 quality={100}
-                className="rounded-full"
+                className="rounded-full max-h-[50px] max-w-[50px] h-[50px]"
               />
               <div className="flex flex-col justify-start items-start">
-                <span className="flex items-center">
+                <span className="flex items-center text-start">
                   Seja bem-vindo(a), {token.name.split(" ")[0]}
                 </span>
                 <span

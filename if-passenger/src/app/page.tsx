@@ -5,10 +5,17 @@ import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { toast } from "sonner";
 import { api } from "./api";
-import { salvarTokenNoCookie } from "./api/functions";
+import { getDecodedToken, salvarTokenNoCookie } from "./api/functions";
+import { JWTToken } from "./api/types";
 import { auth } from "./services/auth/firebase";
 export default function Home() {
   const router = useRouter();
+  const token: JWTToken = getDecodedToken();
+  if (token) {
+    if (token.finishedRegister == true) {
+      router.push("/daily");
+    }
+  }
 
   const SignInWithGoogle = async () => {
     const provider = new GoogleAuthProvider();

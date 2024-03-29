@@ -72,6 +72,7 @@ export default function RegisterForm({
         city: hasCity,
         course: values.course,
         registerNumber: Number(values.registrationNumber),
+        description: values.description,
       },
       {
         headers: {
