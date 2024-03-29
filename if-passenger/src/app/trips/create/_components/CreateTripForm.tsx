@@ -1,9 +1,16 @@
 "use client";
 
 import { Form, FormField } from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { GoogleMap, useJsApiLoader } from "@react-google-maps/api";
+import {
+  Autocomplete,
+  GoogleMap,
+  Marker,
+  useJsApiLoader,
+} from "@react-google-maps/api";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
 const formSchema = z.object({});
@@ -18,11 +25,13 @@ export default function CreateTripForm() {
   const { isLoaded } = useJsApiLoader({
     googleMapsApiKey: process.env.NEXT_PUBLIC_API_GOOGLE_MAPS ?? "",
     id: "MyMap",
+    libraries: ["places"],
   });
 
   if (!isLoaded) {
     return <Skeleton />;
   }
+  //   const [map, setMap] = useState<google.maps.Map | null>(null);
   return (
     <Form {...form}>
       <div className="flex w-screen justify-center">
@@ -32,9 +41,14 @@ export default function CreateTripForm() {
         >
           {/* <FormField></FormField> */}
 
+          <Autocomplete>
+            <Input />
+          </Autocomplete>
+
           {!isLoaded ? (
             <Skeleton />
           ) : (
+            // <></>
             <GoogleMap
               center={center}
               zoom={15}
@@ -43,7 +57,12 @@ export default function CreateTripForm() {
                 height: "auto",
                 aspectRatio: "16/9",
               }}
-            ></GoogleMap>
+              //   onLoad={(map) => {
+              //     setMap(map);
+              //   }}
+            >
+              <Marker position={center} />
+            </GoogleMap>
           )}
         </form>
       </div>
