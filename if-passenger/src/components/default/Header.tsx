@@ -15,6 +15,7 @@ import {
 
 export default function Header({ children }: { children?: React.ReactNode }) {
   const token: JWTToken = getDecodedToken();
+  console.log(token);
   const router = useRouter();
   return (
     <header className="flex justify-between items-center p-4 w-full">

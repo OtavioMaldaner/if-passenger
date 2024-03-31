@@ -1,5 +1,6 @@
 "use client";
 import { GoogleAuthProvider, signInWithPopup } from "firebase/auth";
+import Cookies from "js-cookie";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
@@ -12,7 +13,7 @@ export default function Home() {
   const router = useRouter();
   const token: JWTToken = getDecodedToken();
   if (token) {
-    if (token.finishedRegister == true) {
+    if (token.finishedRegister == true && Cookies.get("accessedToday")) {
       router.push("/daily");
     }
   }
