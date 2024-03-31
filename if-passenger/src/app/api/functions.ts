@@ -1,12 +1,15 @@
+import cookieSignature from 'cookie-signature';
 import Cookie from 'js-cookie';
 import { jwtDecode } from 'jwt-decode';
 import { JWTToken } from "./types";
 
 export function salvarTokenNoCookie(token: string): boolean {
     try {
+        const signedToken = cookieSignature.sign(token, process.env.NEXT_PUBLIC_SIGN_TOKENS ?? '')
+        // console.log(signedToken);
         const decodedToken: JWTToken = jwtDecode(token);
         const expiress = new Date(decodedToken.exp * 1000).toString();
-        document.cookie = `user_token=${token}; path=/; expires=${expiress};`;
+        document.cookie = `user_token=${signedToken}; path=/; expires=${expiress};`;
         return true;
     } catch (error) {
         return false;
