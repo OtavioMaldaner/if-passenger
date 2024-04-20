@@ -1,7 +1,7 @@
 "use client";
 import { api } from "@/app/api";
-import { salvarTokenNoCookie } from "@/app/api/functions";
-import { citiesType, courseType } from "@/app/api/types";
+import { getDecodedToken, salvarTokenNoCookie } from "@/app/api/functions";
+import { citiesType, courseType, JWTToken } from "@/app/api/types";
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -48,7 +48,13 @@ export default function RegisterForm({
   cities: citiesType[];
   courses: courseType[];
 }) {
+  const decoded_token: JWTToken = getDecodedToken();
   const router = useRouter();
+  if (decoded_token.finishedRegister && Cookie.get("accessedToday") == "true") {
+    router.push("/resume");
+  } else if (decoded_token.finishedRegister) {
+    router.push("/homepage");
+  }
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {

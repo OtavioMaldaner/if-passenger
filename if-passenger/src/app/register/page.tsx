@@ -1,5 +1,5 @@
 import { api } from "../api";
-import { citiesType, courseType } from "../api/types";
+import { citiesType, courseType, JWTToken } from "../api/types";
 import { getCities } from "./_actions/getCities";
 import RegisterForm from "./_components/RegisterForm";
 

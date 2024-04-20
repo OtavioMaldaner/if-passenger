@@ -8,10 +8,10 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { SelectItem } from "@radix-ui/react-select";
+import Cookie from "js-cookie";
 import { useState } from "react";
 import { getDecodedToken } from "../api/functions";
 import { JWTToken } from "../api/types";
-
 export default function Homepage() {
   const token: JWTToken = getDecodedToken();
 

@@ -61,7 +61,7 @@
     @apply text-sm;
     @apply font-semibold;
   }
-    a {
+    /* a {
     @apply underline;
-  }
+  } */
 }
