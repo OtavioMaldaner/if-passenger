@@ -50,8 +50,8 @@ export default function CreateTripForm() {
           {/* <FormField></FormField> */}
 
           <Autocomplete
-            onPlaceChanged={(e) => {
-              console.log(e);
+            onPlaceChanged={() => {
+              // console.log(autocomplete.current.getPlace);
             }}
             restrictions={{ country: "BR" }}
           >
