@@ -10,7 +10,7 @@ import {
   Marker,
   useJsApiLoader,
 } from "@react-google-maps/api";
-import { useState } from "react";
+import { Ref, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
 const formSchema = z.object({});
@@ -22,6 +22,21 @@ export default function CreateTripForm() {
   });
   const handleSubmit = async (values: z.infer<typeof formSchema>) => {};
 
+  // Pega os valores dos inputs, que irão definir os pontos de saída e chegada
+  const originRef = useRef<HTMLInputElement | null>(null);
+  const destinationRef = useRef<HTMLInputElement | null>(null);
+
+  // Função para cálculo de rota
+  const calculateRoute = async () => {
+    if (
+      originRef.current?.value === "" ||
+      destinationRef.current?.value === ""
+    ) {
+      return;
+    }
+  };
+
+  // Estados para armazenar o mapa, a resposta da rota, a distância e a duração
   const [map, setMap] = useState<google.maps.Map | null>(null);
   const [directionsResponse, setDirectionsResponse] =
     useState<google.maps.DirectionsResult | null>(null);
@@ -49,13 +64,8 @@ export default function CreateTripForm() {
         >
           {/* <FormField></FormField> */}
 
-          <Autocomplete
-            onPlaceChanged={() => {
-              // console.log(autocomplete.current.getPlace);
-            }}
-            restrictions={{ country: "BR" }}
-          >
-            <Input placeholder="Insira seu local de saída" />
+          <Autocomplete restrictions={{ country: "BR" }}>
+            <Input ref={originRef} placeholder="Insira seu local de saída" />
           </Autocomplete>
 
           <>
