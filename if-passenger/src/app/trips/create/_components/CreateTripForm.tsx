@@ -1,11 +1,13 @@
 "use client";
 
+import { Button } from "@/components/ui/button";
 import { Form, FormField } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
   Autocomplete,
+  DirectionsRenderer,
   GoogleMap,
   Marker,
   useJsApiLoader,
@@ -34,6 +36,22 @@ export default function CreateTripForm() {
     ) {
       return;
     }
+    const directionsService = new google.maps.DirectionsService();
+    const results = await directionsService.route({
+      origin: originRef.current?.value,
+      destination: destinationRef.current?.value,
+      travelMode: google.maps.TravelMode.DRIVING,
+    });
+    setDirectionsResponse(results);
+    setDistance(
+      results.routes[0].legs[0].distance?.text ??
+        "Não obtivemos uma estimativa de distância da viagem"
+    );
+    setDuration(
+      results.routes[0].legs[0].duration?.text ??
+        "Não obtivemos uma estimativa de duração da viagem"
+    );
+    console.log(results);
   };
 
   // Estados para armazenar o mapa, a resposta da rota, a distância e a duração
@@ -68,29 +86,57 @@ export default function CreateTripForm() {
             <Input ref={originRef} placeholder="Insira seu local de saída" />
           </Autocomplete>
 
+          <Autocomplete restrictions={{ country: "BR" }}>
+            <Input
+              ref={destinationRef}
+              placeholder="Insira seu local de chegada"
+            />
+          </Autocomplete>
+
+          <Button onClick={calculateRoute}>Calcular Rota</Button>
+
           <>
             {!isLoaded ? (
               <Skeleton />
             ) : (
-              <GoogleMap
-                center={center}
-                zoom={15}
-                mapContainerStyle={{
-                  width: "100%",
-                  height: "auto",
-                  aspectRatio: "16/9",
-                }}
-                options={{
-                  streetViewControl: false,
-                  mapTypeControl: false,
-                  fullscreenControl: false,
-                }}
-                onLoad={(map) => {
-                  setMap(map);
-                }}
-              >
-                <Marker position={center} />
-              </GoogleMap>
+              <>
+                <GoogleMap
+                  center={center}
+                  zoom={15}
+                  mapContainerStyle={{
+                    width: "100%",
+                    height: "auto",
+                    aspectRatio: "16/9",
+                  }}
+                  options={{
+                    streetViewControl: false,
+                    mapTypeControl: false,
+                    fullscreenControl: false,
+                  }}
+                  onLoad={(map) => {
+                    setMap(map);
+                  }}
+                >
+                  <Marker position={center} />
+                  {
+                    // Se a rota foi calculada, exibe a rota no mapa
+                    directionsResponse && (
+                      <DirectionsRenderer
+                        directions={directionsResponse}
+                        // options={{
+                        //   suppressMarkers: true,
+
+                        // }}
+                      />
+                    )
+                  }
+                </GoogleMap>
+
+                {distance && (
+                  <p className="text-white">Distância: {distance}</p>
+                )}
+                {duration && <p className="text-white">Duração: {duration}</p>}
+              </>
             )}
           </>
         </form>
