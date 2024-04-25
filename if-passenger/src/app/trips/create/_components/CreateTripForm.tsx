@@ -1,12 +1,20 @@
 "use client";
 
+import { address_type } from "@/app/api/types";
 import { Button } from "@/components/ui/button";
 import { Form, FormField } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
-  Autocomplete,
   DirectionsRenderer,
   GoogleMap,
   Marker,
@@ -16,7 +24,11 @@ import { Ref, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
 const formSchema = z.object({});
-export default function CreateTripForm() {
+export default function CreateTripForm({
+  addresses,
+}: {
+  addresses: address_type[];
+}) {
   const center = { lat: -29.45553697, lng: -51.29300846 };
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -25,22 +37,23 @@ export default function CreateTripForm() {
   const handleSubmit = async (values: z.infer<typeof formSchema>) => {};
 
   // Pega os valores dos inputs, que irão definir os pontos de saída e chegada
-  const originRef = useRef<HTMLInputElement | null>(null);
-  const destinationRef = useRef<HTMLInputElement | null>(null);
+  // const originRef = useRef<HTMLInputElement | null>(null);
+  // const destinationRef = useRef<HTMLInputElement | null>(null);
+
+  const [origin, setOrigin] = useState<string>("");
+  const [destination, setDestination] = useState<string>("");
 
   // Função para cálculo de rota
   const calculateRoute = async () => {
-    if (
-      originRef.current?.value === "" ||
-      destinationRef.current?.value === ""
-    ) {
+    if (origin === "" || destination === "") {
       return;
     }
     const directionsService = new google.maps.DirectionsService();
     const results = await directionsService.route({
-      origin: originRef.current?.value,
-      destination: destinationRef.current?.value,
+      origin: origin,
+      destination: destination,
       travelMode: google.maps.TravelMode.DRIVING,
+      language: "pt-BR",
     });
     setDirectionsResponse(results);
     setDistance(
@@ -82,19 +95,50 @@ export default function CreateTripForm() {
         >
           {/* <FormField></FormField> */}
 
-          <Autocomplete restrictions={{ country: "BR" }}>
-            <Input ref={originRef} placeholder="Insira seu local de saída" />
-          </Autocomplete>
+          <Select onValueChange={(e) => setOrigin(e)}>
+            <SelectTrigger className="focus:outline-none">
+              <SelectValue>
+                {addresses.some((address) => address.name == origin)
+                  ? origin
+                  : "Local de saída"}
+              </SelectValue>
+            </SelectTrigger>
+            <SelectContent>
+              <SelectGroup>
+                {addresses.map((address) => {
+                  return (
+                    <SelectItem key={address.id} value={address.name}>
+                      {address.name}
+                    </SelectItem>
+                  );
+                })}
+              </SelectGroup>
+            </SelectContent>
+          </Select>
 
-          <Autocomplete restrictions={{ country: "BR" }}>
-            <Input
-              ref={destinationRef}
-              placeholder="Insira seu local de chegada"
-            />
-          </Autocomplete>
+          <Select onValueChange={(e) => setDestination(e)}>
+            <SelectTrigger className="focus:outline-none">
+              <SelectValue>
+                {addresses.some((address) => address.name == origin)
+                  ? origin
+                  : "Local de chegada"}
+              </SelectValue>
+            </SelectTrigger>
+            <SelectContent>
+              <SelectGroup>
+                {addresses.map((address) => {
+                  return (
+                    <SelectItem key={address.id} value={address.name}>
+                      {address.name}
+                    </SelectItem>
+                  );
+                })}
+              </SelectGroup>
+            </SelectContent>
+          </Select>
 
-          <Button onClick={calculateRoute}>Calcular Rota</Button>
-
+          {/* <Button onClick={calculateRoute}>Calcular Rota</Button> */}
+          {/* 
           <>
             {!isLoaded ? (
               <Skeleton />
@@ -117,17 +161,12 @@ export default function CreateTripForm() {
                     setMap(map);
                   }}
                 >
-                  <Marker position={center} />
                   {
                     // Se a rota foi calculada, exibe a rota no mapa
-                    directionsResponse && (
-                      <DirectionsRenderer
-                        directions={directionsResponse}
-                        // options={{
-                        //   suppressMarkers: true,
-
-                        // }}
-                      />
+                    directionsResponse ? (
+                      <DirectionsRenderer directions={directionsResponse} />
+                    ) : (
+                      <Marker position={center} />
                     )
                   }
                 </GoogleMap>
@@ -138,7 +177,7 @@ export default function CreateTripForm() {
                 {duration && <p className="text-white">Duração: {duration}</p>}
               </>
             )}
-          </>
+          </> */}
         </form>
       </div>
     </Form>

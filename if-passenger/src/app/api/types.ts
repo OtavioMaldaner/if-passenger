@@ -25,3 +25,8 @@ export type JWTToken = {
   finishedRegister: boolean,
   description: string | null
 }
+
+export type address_type = {
+  id: string,
+  name: string,
+}
