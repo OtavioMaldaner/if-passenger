@@ -30,3 +30,11 @@ export type address_type = {
   id: string,
   name: string,
 }
+
+export type user_car_type = {
+  brand: string,
+  id: string,
+  licensePlate: string,
+  model: string,
+  passengers: number
+}

@@ -1,8 +1,14 @@
 "use client";
 
-import { address_type } from "@/app/api/types";
+import { address_type, user_car_type } from "@/app/api/types";
 import { Button } from "@/components/ui/button";
-import { Form, FormField } from "@/components/ui/form";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormMessage,
+} from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -20,28 +26,33 @@ import {
   Marker,
   useJsApiLoader,
 } from "@react-google-maps/api";
-import { Ref, useRef, useState } from "react";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
-const formSchema = z.object({});
+const formSchema = z.object({
+  origin: z.string().nonempty("O local de saída é obrigatório"),
+  destination: z.string().nonempty("O local de chegada é obrigatório"),
+});
 export default function CreateTripForm({
   addresses,
+  gas_price,
+  user_cars,
 }: {
   addresses: address_type[];
+  gas_price: number;
+  user_cars: user_car_type[];
 }) {
-  const center = { lat: -29.45553697, lng: -51.29300846 };
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
-    defaultValues: {},
+    defaultValues: {
+      origin: "",
+      destination: "",
+    },
   });
   const handleSubmit = async (values: z.infer<typeof formSchema>) => {};
 
-  // Pega os valores dos inputs, que irão definir os pontos de saída e chegada
-  // const originRef = useRef<HTMLInputElement | null>(null);
-  // const destinationRef = useRef<HTMLInputElement | null>(null);
-
   const [origin, setOrigin] = useState<string>("");
-  const [destination, setDestination] = useState<string>("");
+  const [destination, setDestination] = useState<string>("Arena do Grêmio");
 
   // Função para cálculo de rota
   const calculateRoute = async () => {
@@ -64,7 +75,6 @@ export default function CreateTripForm({
       results.routes[0].legs[0].duration?.text ??
         "Não obtivemos uma estimativa de duração da viagem"
     );
-    console.log(results);
   };
 
   // Estados para armazenar o mapa, a resposta da rota, a distância e a duração
@@ -93,49 +103,74 @@ export default function CreateTripForm({
           className="text-white flex flex-col gap-7 w-full max-w-xs"
           onSubmit={form.handleSubmit(handleSubmit)}
         >
-          {/* <FormField></FormField> */}
+          <FormField
+            name="origin"
+            control={form.control}
+            render={({ field }) => (
+              <FormItem>
+                <Select
+                  onValueChange={(e) => {
+                    field.onChange(e);
+                  }}
+                  value={field.value}
+                >
+                  <FormControl>
+                    <SelectTrigger className="focus:outline-none">
+                      {field.value != form.control._defaultValues.origin ? (
+                        <SelectValue>{field.value}</SelectValue>
+                      ) : (
+                        <SelectValue>Local de saída</SelectValue>
+                      )}
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    {addresses.map((address) => {
+                      return (
+                        <SelectItem key={address.id} value={address.name}>
+                          {address.name}
+                        </SelectItem>
+                      );
+                    })}
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
 
-          <Select onValueChange={(e) => setOrigin(e)}>
-            <SelectTrigger className="focus:outline-none">
-              <SelectValue>
-                {addresses.some((address) => address.name == origin)
-                  ? origin
-                  : "Local de saída"}
-              </SelectValue>
-            </SelectTrigger>
-            <SelectContent>
-              <SelectGroup>
-                {addresses.map((address) => {
-                  return (
-                    <SelectItem key={address.id} value={address.name}>
-                      {address.name}
-                    </SelectItem>
-                  );
-                })}
-              </SelectGroup>
-            </SelectContent>
-          </Select>
-
-          <Select onValueChange={(e) => setDestination(e)}>
-            <SelectTrigger className="focus:outline-none">
-              <SelectValue>
-                {addresses.some((address) => address.name == origin)
-                  ? origin
-                  : "Local de chegada"}
-              </SelectValue>
-            </SelectTrigger>
-            <SelectContent>
-              <SelectGroup>
-                {addresses.map((address) => {
-                  return (
-                    <SelectItem key={address.id} value={address.name}>
-                      {address.name}
-                    </SelectItem>
-                  );
-                })}
-              </SelectGroup>
-            </SelectContent>
-          </Select>
+          <FormField
+            name="destination"
+            control={form.control}
+            render={({ field }) => (
+              <FormItem>
+                <Select
+                  onValueChange={(e) => field.onChange(e)}
+                  value={field.value}
+                >
+                  <FormControl>
+                    <SelectTrigger className="focus:outline-none">
+                      {field.value !=
+                      form.control._defaultValues.destination ? (
+                        <SelectValue>{field.value}</SelectValue>
+                      ) : (
+                        <SelectValue>Local de chegada</SelectValue>
+                      )}
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    {addresses.map((address) => {
+                      return (
+                        <SelectItem key={address.id} value={address.name}>
+                          {address.name}
+                        </SelectItem>
+                      );
+                    })}
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
 
           {/* <Button onClick={calculateRoute}>Calcular Rota</Button> */}
           {/* 
