@@ -30,7 +30,7 @@ const formSchema = z.object({
   city: z.string().refine((value) => value !== "0", {
     message: "A cidade é obrigatória.",
   }),
-  course: z.string().uuid(),
+  course: z.number(),
   registrationNumber: z
     .string()
     .max(10, "A matrícula deve ter 10 dígitos")
@@ -50,16 +50,16 @@ export default function RegisterForm({
 }) {
   const decoded_token: JWTToken = getDecodedToken();
   const router = useRouter();
-  if (decoded_token.finishedRegister && Cookie.get("accessedToday") == "true") {
-    router.push("/resume");
-  } else if (decoded_token.finishedRegister) {
-    router.push("/homepage");
-  }
+  // if (decoded_token.finishedRegister && Cookie.get("accessedToday") == "true") {
+  //   router.push("/resume");
+  // } else if (decoded_token.finishedRegister) {
+  //   router.push("/homepage");
+  // }
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       city: "0",
-      course: "",
+      course: 1,
       registrationNumber: "",
       description: "",
     },
@@ -141,7 +141,7 @@ export default function RegisterForm({
       <div className="flex w-screen justify-center">
         <form
           className="text-white flex flex-col gap-7 max-w-xs"
-          // onSubmit={form.handleSubmit(handleSubmit)}
+          onSubmit={form.handleSubmit(handleSubmit)}
         >
           <FormField
             name="city"
@@ -186,15 +186,17 @@ export default function RegisterForm({
                   onValueChange={(value) => {
                     field.onChange({ target: { value } });
                   }}
-                  value={field.value}
+                  value={String(field.value)}
                 >
                   <FormControl>
                     <SelectTrigger>
-                      {hasCourse && hasCourse != "" ? (
+                      {hasCourse != 1 ? (
                         <SelectValue>
                           {
-                            courses.find((course) => field.value == course.id)
-                              ?.name
+                            courses.find(
+                              (course) =>
+                                String(field.value) == String(course.id)
+                            )?.name
                           }
                         </SelectValue>
                       ) : (

@@ -49,6 +49,7 @@ const formSchema = z.object({
       message: "A capacidade deve ser um número positivo menor que 7.",
     }
   ),
+  fuelConsumption: z.string(),
 });
 
 export default function RegisterForm({ brands }: { brands: carsType[] }) {
@@ -60,6 +61,7 @@ export default function RegisterForm({ brands }: { brands: carsType[] }) {
       model: "0",
       licensePlate: undefined,
       capacity: "",
+      fuelConsumption: "",
     },
   });
 
@@ -74,6 +76,7 @@ export default function RegisterForm({ brands }: { brands: carsType[] }) {
         model: userCar.model,
         licensePlate: values.licensePlate,
         passengers: Number(values.capacity),
+        fuelConsumption: Number(values.fuelConsumption),
       },
       {
         headers: {
@@ -239,8 +242,27 @@ export default function RegisterForm({ brands }: { brands: carsType[] }) {
               </FormItem>
             )}
           />
-          <Input disabled placeholder="Insira a média de consumo em Km/L" />
-          <Input disabled placeholder="Selecione o tipo de combustível" />
+          <FormField
+            name="fuelConsumption"
+            control={form.control}
+            render={({ field }) => (
+              <FormItem>
+                <FormControl>
+                  <Input
+                    type="number"
+                    inputMode="decimal"
+                    {...field}
+                    onChange={(e) => {
+                      field.onChange(e);
+                    }}
+                    placeholder="Insira a média de consumo em Km/L"
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          {/* <Input disabled placeholder="Selecione o tipo de combustível" /> */}
           <Button type="submit">Enviar</Button>
         </form>
       </div>

@@ -1,5 +1,9 @@
 import { api } from "@/app/api";
-import { address_type, user_car_type } from "@/app/api/types";
+import {
+  address_type,
+  default_vehicles_type,
+  user_car_type,
+} from "@/app/api/types";
 import Header from "@/components/default/Header";
 import { ChevronLeft } from "lucide-react";
 import { cookies } from "next/headers";
@@ -10,7 +14,7 @@ export default async function CreateTrip() {
   const token = cookies().get("user_token")?.value;
   const addressess: address_type[] = await fetch(
     "http://localhost:3333/addresses",
-    { method: "GET" }
+    { method: "GET", headers: { Authorization: `Bearer ${token}` } }
   ).then((res) => res.json());
 
   const request_gas = await api.get("/gas", {
@@ -24,6 +28,15 @@ export default async function CreateTrip() {
       Authorization: `Bearer ${token}`,
     },
   });
+
+  const secondary_vehicles_request = await api.get("/default-vehicles", {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  const secondary_vehicles: default_vehicles_type[] =
+    secondary_vehicles_request.data;
 
   const user_cars: user_car_type[] = request_car.data;
 
@@ -47,6 +60,7 @@ export default async function CreateTrip() {
         addresses={addressess}
         gas_price={gas_price}
         user_cars={user_cars}
+        default_vehicles={secondary_vehicles}
       />
     </main>
   );

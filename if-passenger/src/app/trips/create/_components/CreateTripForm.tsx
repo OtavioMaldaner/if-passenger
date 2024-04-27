@@ -1,6 +1,10 @@
 "use client";
 
-import { address_type, user_car_type } from "@/app/api/types";
+import {
+  address_type,
+  default_vehicles_type,
+  user_car_type,
+} from "@/app/api/types";
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -30,29 +34,53 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
 const formSchema = z.object({
-  origin: z.string().nonempty("O local de saída é obrigatório"),
-  destination: z.string().nonempty("O local de chegada é obrigatório"),
+  origin: z.string({
+    required_error: "O local de saída é obrigatório",
+  }),
+  destination: z.string({
+    required_error: "O local de chegada é obrigatório",
+  }),
+  transportType: z.string({
+    required_error: "O meio de transporte é obrigatório",
+  }),
+  passengers: z.string().refine(
+    (value) => {
+      const numberValue = Number(value);
+      return numberValue > 0 && numberValue < 7;
+    },
+    {
+      message: "A capacidade deve ser um número positivo menor que 7.",
+    }
+  ),
+  date: z.date(),
 });
 export default function CreateTripForm({
   addresses,
   gas_price,
   user_cars,
+  default_vehicles,
 }: {
   addresses: address_type[];
   gas_price: number;
   user_cars: user_car_type[];
+  default_vehicles: default_vehicles_type[];
 }) {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       origin: "",
       destination: "",
+      transportType: "",
+      passengers: "",
+      date: new Date(),
     },
   });
   const handleSubmit = async (values: z.infer<typeof formSchema>) => {};
 
+  const [tollPrice, setTollPrice] = useState<number>(0);
+
   const [origin, setOrigin] = useState<string>("");
-  const [destination, setDestination] = useState<string>("Arena do Grêmio");
+  const [destination, setDestination] = useState<string>("");
 
   // Função para cálculo de rota
   const calculateRoute = async () => {
@@ -167,6 +195,115 @@ export default function CreateTripForm({
                     })}
                   </SelectContent>
                 </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            name="transportType"
+            control={form.control}
+            render={({ field }) => (
+              <FormItem>
+                <Select
+                  onValueChange={(e) => field.onChange(e)}
+                  value={field.value}
+                >
+                  <FormControl>
+                    <SelectTrigger className="focus:outline-none">
+                      {field.value != "" ? (
+                        <SelectValue>
+                          {user_cars.find((car) => car.id === field.value)
+                            ? user_cars.find((car) => car.id === field.value)
+                                ?.brand +
+                              " " +
+                              user_cars.find((car) => car.id === field.value)
+                                ?.model
+                            : default_vehicles.find(
+                                (vehicle) => String(vehicle.id) === field.value
+                              )?.name}
+                        </SelectValue>
+                      ) : (
+                        <SelectValue>Meio de transporte</SelectValue>
+                      )}
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    <SelectGroup>
+                      {user_cars.map((car) => {
+                        return (
+                          <SelectItem key={car.id} value={car.id}>
+                            {car.brand + " " + car.model}
+                          </SelectItem>
+                        );
+                      })}
+                    </SelectGroup>
+                    <SelectGroup>
+                      {default_vehicles.map((vehicle) => {
+                        return (
+                          <SelectItem
+                            key={vehicle.id}
+                            value={String(vehicle.id)}
+                          >
+                            {vehicle.name}
+                          </SelectItem>
+                        );
+                      })}
+                    </SelectGroup>
+                  </SelectContent>
+                </Select>
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            name="passengers"
+            control={form.control}
+            render={({ field }) => (
+              <FormItem>
+                <FormControl>
+                  <Input
+                    {...field}
+                    onChange={(e) => {
+                      field.onChange(e);
+                    }}
+                    placeholder="Insira a quantidade de passageiros"
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <Input
+            disabled
+            placeholder="Selecione um motorista reserva (opcional)"
+          />
+
+          <Input
+            placeholder="Insira o valor gasto em pedágios (opcional)"
+            type="number"
+            inputMode="decimal"
+            onChange={(e) => {
+              setTollPrice(Number(e.target.value));
+            }}
+          />
+
+          <FormField
+            name="date"
+            control={form.control}
+            render={({ field }) => (
+              <FormItem>
+                <FormControl>
+                  <Input
+                    type="date"
+                    {...field}
+                    onChange={(e) => {
+                      field.onChange(e);
+                    }}
+                    placeholder="Insira a data da viagem"
+                  />
+                </FormControl>
                 <FormMessage />
               </FormItem>
             )}

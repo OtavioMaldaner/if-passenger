@@ -38,3 +38,8 @@ export type user_car_type = {
   model: string,
   passengers: number
 }
+
+export type default_vehicles_type = {
+  id: number,
+  name: string,
+}
