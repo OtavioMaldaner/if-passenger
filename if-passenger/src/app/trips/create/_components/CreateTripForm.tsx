@@ -6,14 +6,23 @@ import {
   user_car_type,
 } from "@/app/api/types";
 import { Button } from "@/components/ui/button";
+import { Calendar } from "@/components/ui/calendar";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Form,
   FormControl,
+  FormDescription,
   FormField,
   FormItem,
+  FormLabel,
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import {
   Select,
   SelectContent,
@@ -23,6 +32,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
+import { cn } from "@/lib/utils";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
   DirectionsRenderer,
@@ -30,7 +40,10 @@ import {
   Marker,
   useJsApiLoader,
 } from "@react-google-maps/api";
-import { useState } from "react";
+import { format } from "date-fns";
+import { ptBR } from "date-fns/locale";
+import { CalendarIcon, Link } from "lucide-react";
+import { use, useState } from "react";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
 const formSchema = z.object({
@@ -53,6 +66,7 @@ const formSchema = z.object({
     }
   ),
   date: z.date(),
+  isRecurrent: z.boolean().default(false).optional(),
 });
 export default function CreateTripForm({
   addresses,
@@ -73,6 +87,7 @@ export default function CreateTripForm({
       transportType: "",
       passengers: "",
       date: new Date(),
+      isRecurrent: false,
     },
   });
   const handleSubmit = async (values: z.infer<typeof formSchema>) => {};
@@ -111,6 +126,7 @@ export default function CreateTripForm({
     useState<google.maps.DirectionsResult | null>(null);
   const [distance, setDistance] = useState<string | null>(null);
   const [duration, setDuration] = useState<string | null>(null);
+  const [date, setDate] = useState<Date | undefined>(undefined);
 
   // const [trip, setTrip] = useState<{from: }>
 
@@ -144,11 +160,7 @@ export default function CreateTripForm({
                 >
                   <FormControl>
                     <SelectTrigger className="focus:outline-none">
-                      {field.value != form.control._defaultValues.origin ? (
-                        <SelectValue>{field.value}</SelectValue>
-                      ) : (
-                        <SelectValue>Local de saída</SelectValue>
-                      )}
+                      <SelectValue placeholder="Local de saída" />
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
@@ -177,12 +189,7 @@ export default function CreateTripForm({
                 >
                   <FormControl>
                     <SelectTrigger className="focus:outline-none">
-                      {field.value !=
-                      form.control._defaultValues.destination ? (
-                        <SelectValue>{field.value}</SelectValue>
-                      ) : (
-                        <SelectValue>Local de chegada</SelectValue>
-                      )}
+                      <SelectValue placeholder="Local de chegada" />
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
@@ -211,21 +218,17 @@ export default function CreateTripForm({
                 >
                   <FormControl>
                     <SelectTrigger className="focus:outline-none">
-                      {field.value != "" ? (
-                        <SelectValue>
-                          {user_cars.find((car) => car.id === field.value)
-                            ? user_cars.find((car) => car.id === field.value)
-                                ?.brand +
-                              " " +
-                              user_cars.find((car) => car.id === field.value)
-                                ?.model
-                            : default_vehicles.find(
-                                (vehicle) => String(vehicle.id) === field.value
-                              )?.name}
-                        </SelectValue>
-                      ) : (
-                        <SelectValue>Meio de transporte</SelectValue>
-                      )}
+                      <SelectValue placeholder="Meio de transporte">
+                        {user_cars.find((car) => car.id === field.value)
+                          ? user_cars.find((car) => car.id === field.value)
+                              ?.brand +
+                            " " +
+                            user_cars.find((car) => car.id === field.value)
+                              ?.model
+                          : default_vehicles.find(
+                              (vehicle) => String(vehicle.id) === field.value
+                            )?.name}
+                      </SelectValue>
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
@@ -275,10 +278,16 @@ export default function CreateTripForm({
             )}
           />
 
-          <Input
-            disabled
-            placeholder="Selecione um motorista reserva (opcional)"
-          />
+          <div className="flex flex-col gap-2 items-center justify-center">
+            <Input
+              disabled
+              placeholder="Selecione um motorista reserva (opcional)"
+            />
+            <p className="text-sm text-muted-foreground pl-1">
+              É possível selecionar um motorista reserva caso ocorra alguma
+              emergência e você não possa dirigir.
+            </p>
+          </div>
 
           <Input
             placeholder="Insira o valor gasto em pedágios (opcional)"
@@ -293,21 +302,80 @@ export default function CreateTripForm({
             name="date"
             control={form.control}
             render={({ field }) => (
-              <FormItem>
-                <FormControl>
-                  <Input
-                    type="date"
-                    {...field}
-                    onChange={(e) => {
-                      field.onChange(e);
-                    }}
-                    placeholder="Insira a data da viagem"
-                  />
-                </FormControl>
+              <FormItem className="flex flex-col">
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <FormControl>
+                      <Button
+                        variant={"outline"}
+                        className={cn(
+                          "pl-3 text-left font-normal",
+                          !field.value && "text-muted-foreground"
+                        )}
+                      >
+                        {field.value ? (
+                          format(field.value, "EEEE', 'dd ' de 'MMMM", {
+                            locale: ptBR,
+                          })
+                        ) : (
+                          <span>Selecione a data da viagem</span>
+                        )}
+                        <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                      </Button>
+                    </FormControl>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <Calendar
+                      mode="single"
+                      selected={field.value}
+                      onSelect={field.onChange}
+                      disabled={(date) => {
+                        const dayOfWeek = date.getDay();
+                        return (
+                          dayOfWeek === 0 ||
+                          dayOfWeek === 6 ||
+                          date < new Date()
+                        );
+                      }}
+                      locale={ptBR}
+                      initialFocus
+                    />
+                  </PopoverContent>
+                </Popover>
                 <FormMessage />
               </FormItem>
             )}
           />
+
+          <FormField
+            control={form.control}
+            name="isRecurrent"
+            render={({ field }) => (
+              <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border-2 border-primary p-4">
+                <FormControl>
+                  <Checkbox
+                    checked={field.value}
+                    onCheckedChange={field.onChange}
+                  />
+                </FormControl>
+                <div className="space-y-1 leading-none">
+                  <FormLabel>Esta viagem é recorrente?</FormLabel>
+                  <FormDescription>
+                    Se você realiza essa viagem regularmente, esta opção é para
+                    você. Ao selecioná-la, a viagem será criada automaticamente
+                    para todos os dias durante <strong>duas semanas</strong>.
+                    Assim, você não precisará se preocupar em inserir os
+                    detalhes da viagem repetidamente.
+                  </FormDescription>
+                </div>
+              </FormItem>
+            )}
+          />
+
+          <h2 className="text-lg pb-8 w-full text-center">Sua agenda</h2>
+
+          {/* )}
+          /> */}
 
           {/* <Button onClick={calculateRoute}>Calcular Rota</Button> */}
           {/* 

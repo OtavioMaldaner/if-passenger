@@ -55,7 +55,7 @@ export default async function CreateTrip() {
           <ChevronLeft size={18} /> Página Inicial
         </Link>
       </Header>
-      <h1 className="font-bold text-xl">Criar Viagem</h1>
+      <h1 className="font-bold text-xl pb-8">Criar Viagem</h1>
       <CreateTripForm
         addresses={addressess}
         gas_price={gas_price}

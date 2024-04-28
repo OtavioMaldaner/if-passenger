@@ -156,13 +156,7 @@ export default function RegisterForm({
                 >
                   <FormControl>
                     <SelectTrigger>
-                      {hasCity && hasCity != "0" ? (
-                        <SelectValue>{field.value}</SelectValue>
-                      ) : (
-                        <SelectValue>
-                          Selecione a cidade que mais frequenta
-                        </SelectValue>
-                      )}
+                      <SelectValue placeholder="Selecione a cidade que mais frequenta" />
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
@@ -190,18 +184,13 @@ export default function RegisterForm({
                 >
                   <FormControl>
                     <SelectTrigger>
-                      {hasCourse != 1 ? (
-                        <SelectValue>
-                          {
-                            courses.find(
-                              (course) =>
-                                String(field.value) == String(course.id)
-                            )?.name
-                          }
-                        </SelectValue>
-                      ) : (
-                        <SelectValue>Selecione seu curso</SelectValue>
-                      )}
+                      <SelectValue placeholder="Selecione seu curso">
+                        {
+                          courses.find(
+                            (course) => String(field.value) == String(course.id)
+                          )?.name
+                        }
+                      </SelectValue>
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>

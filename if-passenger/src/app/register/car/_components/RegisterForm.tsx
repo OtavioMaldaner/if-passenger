@@ -142,13 +142,9 @@ export default function RegisterForm({ brands }: { brands: carsType[] }) {
                 >
                   <FormControl>
                     <SelectTrigger>
-                      {hasBrand && hasBrand != "0" ? (
-                        <SelectValue>{userCar.brand}</SelectValue>
-                      ) : (
-                        <SelectValue>
-                          Selecione a marca do seu carro
-                        </SelectValue>
-                      )}
+                      <SelectValue placeholder="Selecione a marca do seu carro">
+                        {userCar.brand}
+                      </SelectValue>
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
@@ -183,13 +179,9 @@ export default function RegisterForm({ brands }: { brands: carsType[] }) {
                 >
                   <FormControl>
                     <SelectTrigger>
-                      {hasModel && hasModel != "0" && userCar.model !== "" ? (
-                        <SelectValue>{userCar.model}</SelectValue>
-                      ) : (
-                        <SelectValue>
-                          Selecione o modelo do seu carro
-                        </SelectValue>
-                      )}
+                      <SelectValue placeholder="Selecione o modelo do seu carro">
+                        {userCar.model}
+                      </SelectValue>
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
