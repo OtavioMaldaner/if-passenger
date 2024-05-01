@@ -7,6 +7,7 @@ import {
 } from "@/app/api/types";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
+import { Card, CardContent } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
   Form,
@@ -32,6 +33,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
@@ -40,10 +42,10 @@ import {
   Marker,
   useJsApiLoader,
 } from "@react-google-maps/api";
-import { format } from "date-fns";
+import { format, set } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { CalendarIcon, Link } from "lucide-react";
-import { use, useState } from "react";
+import { CalendarIcon, Clock2, DollarSign, LandPlot, Link } from "lucide-react";
+import { use, useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
 const formSchema = z.object({
@@ -66,7 +68,8 @@ const formSchema = z.object({
     }
   ),
   date: z.date(),
-  isRecurrent: z.boolean().default(false).optional(),
+  recurrency: z.string().uuid(),
+  description: z.string().optional(),
 });
 export default function CreateTripForm({
   addresses,
@@ -79,6 +82,7 @@ export default function CreateTripForm({
   user_cars: user_car_type[];
   default_vehicles: default_vehicles_type[];
 }) {
+  const center = { lat: -29.45553697, lng: -51.29300846 };
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -87,25 +91,62 @@ export default function CreateTripForm({
       transportType: "",
       passengers: "",
       date: new Date(),
-      isRecurrent: false,
+      recurrency: "",
+      description: "",
     },
   });
   const handleSubmit = async (values: z.infer<typeof formSchema>) => {};
 
-  const [tollPrice, setTollPrice] = useState<number>(0);
+  function calculateRecommendedPrice() {
+    const vehicleId = form.getValues("transportType");
+    const isDefaultVehicle = default_vehicles.find(
+      (vehicle) => String(vehicle.id) === vehicleId
+    );
+    const passengers = Number(form.getValues("passengers"));
+    const car = user_cars.find((car) => car.id === vehicleId);
+    const fuelConsumption = car?.fuelConsumption || 1;
+    const distanceInKm = parseFloat(
+      distance ? distance.replace(/km|m/g, "") : "0"
+    );
 
-  const [origin, setOrigin] = useState<string>("");
-  const [destination, setDestination] = useState<string>("");
+    if (!isDefaultVehicle && gas_price > 0) {
+      const litter = distanceInKm / fuelConsumption;
+      const gasAndMaintenance = gas_price * 4;
+      const gasPrice = litter * gasAndMaintenance;
+      const fullPrice = gasPrice + tollPrice;
+      const price = fullPrice / passengers;
+      return Intl.NumberFormat("pt-BR", {
+        style: "currency",
+        currency: "BRL",
+      }).format(price);
+    }
+
+    return null;
+  }
+
+  const [tripDates, setTripDates] = useState<Date[]>([]);
+
+  const recurrency_types = [
+    { id: "be072707-5645-4764-94e4-0c211657c4f8", type: "Sem recorrência" },
+    { id: "e29bc112-0ddb-46be-8ed0-cffcb142e70e", type: "Nesse dia da semana" },
+    { id: "d5d80044-2007-4ddd-bf26-c3f7f7b19532", type: "Todos os dias" },
+  ];
+
+  const [tollPrice, setTollPrice] = useState<number>(0);
 
   // Função para cálculo de rota
   const calculateRoute = async () => {
-    if (origin === "" || destination === "") {
+    if (
+      form.getValues("origin") === "" ||
+      form.getValues("destination") === ""
+    ) {
       return;
     }
+    console.log("EXECUTOU");
     const directionsService = new google.maps.DirectionsService();
     const results = await directionsService.route({
-      origin: origin,
-      destination: destination,
+      origin: form.getValues("origin"),
+      destination: form.getValues("destination"),
       travelMode: google.maps.TravelMode.DRIVING,
       language: "pt-BR",
     });
@@ -118,6 +159,7 @@ export default function CreateTripForm({
       results.routes[0].legs[0].duration?.text ??
         "Não obtivemos uma estimativa de duração da viagem"
     );
+    console.log(results.routes[0].legs[0].distance?.value);
   };
 
   // Estados para armazenar o mapa, a resposta da rota, a distância e a duração
@@ -135,6 +177,16 @@ export default function CreateTripForm({
     id: "MyMap",
     libraries: ["places"],
   });
+  useEffect(() => {
+    const origin = form.getValues("origin");
+    const destination = form.getValues("destination");
+    if (
+      origin !== form.control._defaultValues.origin &&
+      destination !== form.control._defaultValues.destination
+    ) {
+      calculateRoute();
+    }
+  }, [form.watch("origin"), form.watch("destination")]);
 
   if (!isLoaded) {
     return <Skeleton />;
@@ -299,6 +351,26 @@ export default function CreateTripForm({
           />
 
           <FormField
+            name="description"
+            control={form.control}
+            render={({ field }) => (
+              <FormItem>
+                <FormControl>
+                  <Textarea
+                    rows={8}
+                    {...field}
+                    onChange={(e) => {
+                      field.onChange(e);
+                    }}
+                    placeholder="Insira a descrição da viagem (opcional)"
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
             name="date"
             control={form.control}
             render={({ field }) => (
@@ -328,7 +400,10 @@ export default function CreateTripForm({
                     <Calendar
                       mode="single"
                       selected={field.value}
-                      onSelect={field.onChange}
+                      onSelect={(date) => {
+                        field.onChange(date);
+                        setTripDates([new Date(date ?? "")]);
+                      }}
                       disabled={(date) => {
                         const dayOfWeek = date.getDay();
                         return (
@@ -348,40 +423,115 @@ export default function CreateTripForm({
           />
 
           <FormField
+            name="recurrency"
             control={form.control}
-            name="isRecurrent"
             render={({ field }) => (
-              <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border-2 border-primary p-4">
-                <FormControl>
-                  <Checkbox
-                    checked={field.value}
-                    onCheckedChange={field.onChange}
-                  />
-                </FormControl>
-                <div className="space-y-1 leading-none">
-                  <FormLabel>Esta viagem é recorrente?</FormLabel>
-                  <FormDescription>
-                    Se você realiza essa viagem regularmente, esta opção é para
-                    você. Ao selecioná-la, a viagem será criada automaticamente
-                    para todos os dias durante <strong>duas semanas</strong>.
-                    Assim, você não precisará se preocupar em inserir os
-                    detalhes da viagem repetidamente.
-                  </FormDescription>
-                </div>
+              <FormItem>
+                <Select
+                  onValueChange={(e) => {
+                    field.onChange(e);
+                    const date = new Date(form.getValues("date"));
+                    setTripDates([date]);
+                    const dateInTwoWeeks = new Date(date);
+                    dateInTwoWeeks.setDate(date.getDate() + 14);
+                    if (e === recurrency_types[1].id) {
+                      const dayOfWeek = date.getDay();
+                      console.log(dayOfWeek);
+                      for (
+                        let d = new Date(date);
+                        d <= dateInTwoWeeks;
+                        d.setDate(d.getDate() + 1)
+                      ) {
+                        const currentDate = new Date(d);
+                        if (currentDate.getDay() === dayOfWeek) {
+                          setTripDates((prevDates) => [
+                            ...prevDates,
+                            currentDate,
+                          ]);
+                        }
+                      }
+                    } else if (e === recurrency_types[2].id) {
+                      while (date < dateInTwoWeeks) {
+                        const currentDate = new Date(date);
+                        if (
+                          currentDate.getDay() !== 0 &&
+                          currentDate.getDay() !== 6
+                        ) {
+                          setTripDates((prevDates) => [
+                            ...prevDates,
+                            currentDate,
+                          ]);
+                        }
+                        date.setDate(date.getDate() + 1);
+                      }
+                    }
+                  }}
+                  value={field.value}
+                >
+                  <FormControl>
+                    <SelectTrigger className="focus:outline-none">
+                      <SelectValue placeholder="Selecione a recorrência">
+                        {
+                          recurrency_types.find(
+                            (recurrency) => recurrency.id === field.value
+                          )?.type
+                        }
+                      </SelectValue>
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    <SelectGroup>
+                      {recurrency_types.map((recurrency) => {
+                        return (
+                          <SelectItem key={recurrency.id} value={recurrency.id}>
+                            {recurrency.type}
+                          </SelectItem>
+                        );
+                      })}
+                    </SelectGroup>
+                  </SelectContent>
+                </Select>
+                <FormDescription>
+                  Se você realiza essa viagem regularmente, esta opção é para
+                  você. Aqui, você pode escolher se deseja criar a viagem apenas
+                  para o dia da semana selecionado ou para todos os dias. A
+                  viagem será automaticamente criada seguindo essa regra por{" "}
+                  <strong>duas semanas</strong>. Isso significa que você não
+                  precisará se preocupar em inserir os detalhes da viagem
+                  repetidamente durante esse período.
+                </FormDescription>
               </FormItem>
             )}
           />
 
           <h2 className="text-lg pb-8 w-full text-center">Sua agenda</h2>
 
-          {/* )}
-          /> */}
+          <div className="flex flex-col items-center justify-center">
+            <Card>
+              <CardContent>
+                <Calendar
+                  mode="multiple"
+                  selected={tripDates}
+                  disabled={(date) => {
+                    const dayOfWeek = date.getDay();
+                    return dayOfWeek === 0 || dayOfWeek === 6;
+                  }}
+                  locale={ptBR}
+                  initialFocus
+                />
+              </CardContent>
+            </Card>
+          </div>
 
-          {/* <Button onClick={calculateRoute}>Calcular Rota</Button> */}
-          {/* 
           <>
-            {!isLoaded ? (
-              <Skeleton />
+            {form.getValues("origin") == "" &&
+            form.getValues("destination") == "" ? (
+              <div className="flex flex-col gap-3">
+                <Skeleton className="w-full h-auto aspect-video" />
+                <Skeleton className="w-full h-5 " />
+                <Skeleton className="w-full h-5 " />
+                <Skeleton className="w-full h-5 " />
+              </div>
             ) : (
               <>
                 <GoogleMap
@@ -391,6 +541,7 @@ export default function CreateTripForm({
                     width: "100%",
                     height: "auto",
                     aspectRatio: "16/9",
+                    borderRadius: "11px",
                   }}
                   options={{
                     streetViewControl: false,
@@ -410,14 +561,46 @@ export default function CreateTripForm({
                     )
                   }
                 </GoogleMap>
-
-                {distance && (
-                  <p className="text-white">Distância: {distance}</p>
-                )}
-                {duration && <p className="text-white">Duração: {duration}</p>}
+                <>
+                  {distance &&
+                    form.getValues("passengers") !==
+                      form.control._defaultValues.passengers &&
+                    form.getValues("transportType") !==
+                      form.control._defaultValues.passengers && (
+                      <>
+                        <p className="flex items-center gap-3">
+                          <LandPlot className="text-primary" size={18} />{" "}
+                          <span className="text-white">
+                            {" "}
+                            Distância: {distance}
+                          </span>
+                        </p>
+                        {!default_vehicles.find(
+                          (vehicle) =>
+                            String(vehicle.id) ===
+                            form.getValues("transportType")
+                        ) &&
+                          gas_price > 0 && (
+                            <p className="flex items-center gap-3">
+                              <DollarSign className="text-primary" size={18} />{" "}
+                              <span className="text-white">
+                                Preço mínimo recomendado por passageiro:{" "}
+                                {calculateRecommendedPrice()}
+                              </span>
+                            </p>
+                          )}
+                      </>
+                    )}
+                  {duration && (
+                    <p className="flex items-center gap-3">
+                      <Clock2 className="text-primary" size={18} />{" "}
+                      <span className="text-white">Duração: {duration}</span>
+                    </p>
+                  )}
+                </>
               </>
             )}
-          </> */}
+          </>
         </form>
       </div>
     </Form>

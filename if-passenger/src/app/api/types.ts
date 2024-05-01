@@ -36,7 +36,8 @@ export type user_car_type = {
   id: string,
   licensePlate: string,
   model: string,
-  passengers: number
+  passengers: number,
+  fuelConsumption: number,
 }
 
 export type default_vehicles_type = {
