@@ -8,14 +8,12 @@ import {
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { Card, CardContent } from "@/components/ui/card";
-import { Checkbox } from "@/components/ui/checkbox";
 import {
   Form,
   FormControl,
   FormDescription,
   FormField,
   FormItem,
-  FormLabel,
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
@@ -44,8 +42,8 @@ import {
 } from "@react-google-maps/api";
 import { format, set } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { CalendarIcon, Clock2, DollarSign, LandPlot, Link } from "lucide-react";
-import { use, useEffect, useState } from "react";
+import { CalendarIcon, Clock2, DollarSign, LandPlot } from "lucide-react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
 const formSchema = z.object({
@@ -70,6 +68,9 @@ const formSchema = z.object({
   date: z.date(),
   recurrency: z.string().uuid(),
   description: z.string().optional(),
+  finalPrice: z.string({
+    required_error: "O preço final é obrigatório",
+  }),
 });
 export default function CreateTripForm({
   addresses,
@@ -93,6 +94,7 @@ export default function CreateTripForm({
       date: new Date(),
       recurrency: "",
       description: "",
+      finalPrice: "",
     },
   });
   const handleSubmit = async (values: z.infer<typeof formSchema>) => {};
@@ -168,9 +170,6 @@ export default function CreateTripForm({
     useState<google.maps.DirectionsResult | null>(null);
   const [distance, setDistance] = useState<string | null>(null);
   const [duration, setDuration] = useState<string | null>(null);
-  const [date, setDate] = useState<Date | undefined>(undefined);
-
-  // const [trip, setTrip] = useState<{from: }>
 
   const { isLoaded } = useJsApiLoader({
     googleMapsApiKey: process.env.NEXT_PUBLIC_API_GOOGLE_MAPS ?? "",
@@ -601,6 +600,31 @@ export default function CreateTripForm({
               </>
             )}
           </>
+
+          <FormField
+            name="finalPrice"
+            control={form.control}
+            render={({ field }) => (
+              <FormItem>
+                <FormControl>
+                  <Input
+                    inputMode="decimal"
+                    type="number"
+                    {...field}
+                    onChange={(e) => {
+                      field.onChange(e);
+                    }}
+                    placeholder="Insira o preço final da viagem"
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <Button className="mb-10" type="submit">
+            Criar viagem
+          </Button>
         </form>
       </div>
     </Form>

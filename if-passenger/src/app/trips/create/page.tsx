@@ -17,11 +17,27 @@ export default async function CreateTrip() {
     { method: "GET", headers: { Authorization: `Bearer ${token}` } }
   ).then((res) => res.json());
 
-  const request_gas = await api.get("/gas", {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  });
+  let gas_price: number = 0;
+  let attempts = 0;
+  const maxAttempts = 5;
+
+  while (gas_price === 0 && attempts < maxAttempts) {
+    try {
+      const request_gas = await api.get("/gas", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (request_gas.status == 200 && request_gas.data.price !== undefined) {
+        gas_price = request_gas.data.price;
+      }
+    } catch (error) {
+      console.error("Error fetching gas price:", error);
+    }
+
+    attempts++;
+  }
 
   const request_car = await api.get("/cars", {
     headers: {
@@ -37,13 +53,7 @@ export default async function CreateTrip() {
 
   const secondary_vehicles: default_vehicles_type[] =
     secondary_vehicles_request.data;
-
   const user_cars: user_car_type[] = request_car.data;
-
-  let gas_price: number = 0;
-  if (request_gas.status == 200 && request_gas.data.price !== undefined) {
-    gas_price = request_gas.data.price;
-  }
 
   return (
     <main className="flex flex-col items-center justify-center w-full">
