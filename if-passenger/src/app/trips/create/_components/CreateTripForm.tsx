@@ -144,7 +144,6 @@ export default function CreateTripForm({
     ) {
       return;
     }
-    console.log("EXECUTOU");
     const directionsService = new google.maps.DirectionsService();
     const results = await directionsService.route({
       origin: form.getValues("origin"),
@@ -161,7 +160,6 @@ export default function CreateTripForm({
       results.routes[0].legs[0].duration?.text ??
         "Não obtivemos uma estimativa de duração da viagem"
     );
-    console.log(results.routes[0].legs[0].distance?.value);
   };
 
   // Estados para armazenar o mapa, a resposta da rota, a distância e a duração
