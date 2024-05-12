@@ -120,7 +120,7 @@ export default function RegisterForm({ brands }: { brands: carsType[] }) {
     <Form {...form}>
       <div className="flex w-screen justify-center">
         <form
-          className="text-white flex flex-col gap-7 max-w-xs"
+          className="text-white flex flex-col gap-7 max-w-xs w-full"
           onSubmit={form.handleSubmit(handleSubmit)}
         >
           <FormField

@@ -9,13 +9,17 @@ import {
 } from "@/components/ui/select";
 import { SelectItem } from "@radix-ui/react-select";
 import Cookie from "js-cookie";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { api } from "../api";
 import { getDecodedToken } from "../api/functions";
-import { JWTToken } from "../api/types";
+import { JWTToken, trip_type } from "../api/types";
+import Feed from "./_components/Feed";
 export default function Homepage() {
   const token: JWTToken = getDecodedToken();
 
   const [selected, setSelected] = useState<string>("following");
+
+  const [data, setData] = useState<trip_type[]>([]);
 
   const values: { value: string; name: string }[] = [
     {
@@ -35,6 +39,16 @@ export default function Homepage() {
       name: "Em 2 horas",
     },
   ];
+
+  useEffect(() => {
+    fetch(`http://localhost:3333/trips`, {
+      headers: {
+        Authorization: `Bearer ${Cookie.get("user_token")}`,
+      },
+    })
+      .then((res) => res.json())
+      .then((data) => setData(data));
+  }, [selected]);
   return (
     <main>
       <Header>
@@ -58,6 +72,9 @@ export default function Homepage() {
           </SelectContent>
         </Select>
       </Header>
+      <section>
+        <Feed trips={data} />
+      </section>
     </main>
   );
 }

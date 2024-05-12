@@ -44,3 +44,23 @@ export type default_vehicles_type = {
   id: number,
   name: string,
 }
+
+export type trip_type = {
+  id: string,
+  AddressFrom: {
+    name: string,
+  },
+  AddressTo: {
+    name: string,
+  },
+  driver: {
+    name: string,
+    id: string,
+    image: string,
+    course: {
+      name: string,
+    },
+  },
+  price: number,
+  when: string
+}

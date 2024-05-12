@@ -1,5 +1,6 @@
 "use client";
 
+import { api } from "@/app/api";
 import {
   address_type,
   default_vehicles_type,
@@ -42,10 +43,13 @@ import {
 } from "@react-google-maps/api";
 import { format, set } from "date-fns";
 import { ptBR } from "date-fns/locale";
+import Cookie from "js-cookie";
 import { CalendarIcon, Clock2, DollarSign, LandPlot } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
+import { toast } from "sonner";
 import * as z from "zod";
+
 const formSchema = z.object({
   origin: z.string({
     required_error: "O local de saída é obrigatório",
@@ -97,7 +101,51 @@ export default function CreateTripForm({
       finalPrice: "",
     },
   });
-  const handleSubmit = async (values: z.infer<typeof formSchema>) => {};
+  const handleSubmit = async (values: z.infer<typeof formSchema>) => {
+    const {
+      passengers,
+      finalPrice: price,
+      date,
+      origin,
+      destination,
+      transportType: vehicle,
+      description: notes,
+      recurrency: recurrancy,
+    } = values;
+
+    try {
+      await api.post(
+        "/trip",
+        {
+          passengers: Number(passengers),
+          price: Number(price),
+          date,
+          origin: Number(
+            addresses.find((address) => address.name === origin).id
+          ),
+          destination: Number(
+            addresses.find((address) => address.name === destination).id
+          ),
+          vehicle,
+          directionsResponse: JSON.stringify(directionsResponse),
+          notes,
+          recurrancy,
+          distance,
+          duration,
+          recommendedPrice: Number(calculateRecommendedPrice()?.split(" ")[0]),
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${Cookie.get("user_token")}`,
+          },
+        }
+      );
+
+      toast.success("Viagem criada com sucesso!");
+    } catch (error) {
+      toast.error(`Erro ao criar viagem: ${error.message}`);
+    }
+  };
 
   function calculateRecommendedPrice() {
     const vehicleId = form.getValues("transportType");
