@@ -3,7 +3,7 @@ import Post from "./Post";
 
 export default function Feed({ trips }: { trips: trip_type[] }) {
   return (
-    <main>
+    <main className="flex flex-col items-center justify-center gap-7 mb-5">
       {trips.map((trip) => {
         return <Post post={trip} key={trip.id} />;
       })}

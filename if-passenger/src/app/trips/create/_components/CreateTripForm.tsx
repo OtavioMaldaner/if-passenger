@@ -41,7 +41,7 @@ import {
   Marker,
   useJsApiLoader,
 } from "@react-google-maps/api";
-import { format, set } from "date-fns";
+import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import Cookie from "js-cookie";
 import { CalendarIcon, Clock2, DollarSign, LandPlot } from "lucide-react";
