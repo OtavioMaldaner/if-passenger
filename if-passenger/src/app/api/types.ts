@@ -22,6 +22,7 @@ export type JWTToken = {
   exp: number,
   sub: string,
   iat: number,
+  registrationNumber: number,
   finishedRegister: boolean,
   description: string | null
 }
@@ -57,10 +58,25 @@ export type trip_type = {
     name: string,
     id: string,
     image: string,
+    registrationNumber: number,
     course: {
       name: string,
     },
   },
   price: number,
   when: string
+}
+
+export type user_type = {
+  id: string,
+  name: string,
+  course: string,
+  city: string,
+  image: string,
+  email: string,
+  description: string,
+  registrationNumber: number,
+  followers: number,
+  following: number,
+  followedByUser: boolean
 }

@@ -50,7 +50,7 @@ export default function Homepage() {
       .then((data) => setData(data));
   }, [selected]);
   return (
-    <main>
+    <main className="flex flex-col gap-12">
       <Header>
         <Select defaultValue="following" onValueChange={(e) => setSelected(e)}>
           <SelectTrigger className="w-[140px] border-0 focus:outline-none">

@@ -70,7 +70,7 @@ export default function RegisterForm({
 
   const cityId = cities.find((city) => city.nome == hasCity)?.id;
 
-  const handleSubmit = async (values: z.infer<typeof formSchema>) => {
+  const handleSubmitForm = async (values: z.infer<typeof formSchema>) => {
     const req = await api.post(
       "/register/user",
       {
@@ -106,31 +106,39 @@ export default function RegisterForm({
   const handleSubmitAndRegisterCar = async (
     values: z.infer<typeof formSchema>
   ) => {
-    const req = await api.post(
-      "/register/user",
-      {
-        cityId: cityId,
-        city: hasCity,
-        course: values.course,
-        registerNumber: Number(values.registrationNumber),
-      },
-      {
-        headers: {
-          Authorization: `Bearer ${Cookie.get("user_token")}`,
+    try {
+      const req = await api.post(
+        "/register/user",
+        {
+          cityId: cityId,
+          city: hasCity,
+          course: values.course,
+          registerNumber: Number(values.registrationNumber),
         },
-      }
-    );
-    if (req.status === 200 || req.status === 201) {
-      toast("Cadastro realizado com sucesso!");
-      const { token } = req.data;
-      if (salvarTokenNoCookie(token)) {
-        router.push("/register/car");
+        {
+          headers: {
+            Authorization: `Bearer ${Cookie.get("user_token")}`,
+          },
+        }
+      );
+
+      if (req.status === 200 || req.status === 201) {
+        toast("Cadastro realizado com sucesso!");
+        const { token } = req.data;
+        if (salvarTokenNoCookie(token)) {
+          router.push("/register/car");
+        } else {
+          toast.error("Erro ao salvar o token de autenticação!", {
+            description: "Tente novamente mais tarde e avise um desenvolvedor!",
+          });
+        }
       } else {
-        toast.error("Erro ao salvar o token de autenticação!", {
+        toast.error("Erro ao realizar o cadastro!", {
           description: "Tente novamente mais tarde e avise um desenvolvedor!",
         });
       }
-    } else {
+    } catch (error) {
+      console.error(error);
       toast.error("Erro ao realizar o cadastro!", {
         description: "Tente novamente mais tarde e avise um desenvolvedor!",
       });
@@ -139,10 +147,7 @@ export default function RegisterForm({
   return (
     <Form {...form}>
       <div className="flex w-screen justify-center">
-        <form
-          className="text-white flex flex-col gap-7 max-w-xs"
-          onSubmit={form.handleSubmit(handleSubmit)}
-        >
+        <form className="text-white flex flex-col gap-7 max-w-xs w-full">
           <FormField
             name="city"
             control={form.control}
@@ -242,7 +247,7 @@ export default function RegisterForm({
             )}
           />
           <div className="flex justify-between flex-row-reverse">
-            <Button onClick={() => handleSubmit(form.getValues())}>
+            <Button onClick={() => handleSubmitForm(form.getValues())}>
               Enviar
             </Button>
             <Button

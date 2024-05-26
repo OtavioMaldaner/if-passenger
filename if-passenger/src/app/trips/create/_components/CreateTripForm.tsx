@@ -481,7 +481,6 @@ export default function CreateTripForm({
                     dateInTwoWeeks.setDate(date.getDate() + 14);
                     if (e === recurrency_types[1].id) {
                       const dayOfWeek = date.getDay();
-                      console.log(dayOfWeek);
                       for (
                         let d = new Date(date);
                         d <= dateInTwoWeeks;

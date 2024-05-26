@@ -48,7 +48,7 @@ export default function Post({ post }: { post: trip_type }) {
   return (
     <div className="flex flex-col items-center gap-2 max-w-[92%] w-full">
       <Link
-        href={`/user/${post.driver.id}`}
+        href={`/user/${post.driver.registrationNumber}`}
         className="flex items-center justify-start gap-3 w-full"
       >
         <Image
@@ -66,7 +66,10 @@ export default function Post({ post }: { post: trip_type }) {
           <span>{post.driver.course.name}</span>
         </div>
       </Link>
-      <Link href={`/trip/${post.id}`} className="w-full flex flex-col gap-1">
+      <Link
+        href={`/trip/${post.id}`}
+        className="w-full flex flex-col gap-1 mt-3"
+      >
         <div>
           {!isLoaded ? (
             <div className="flex flex-col gap-3">

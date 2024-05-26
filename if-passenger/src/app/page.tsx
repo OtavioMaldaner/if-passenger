@@ -29,7 +29,12 @@ export default function Home() {
     if (request.status === 200) {
       const { token } = request.data;
       if (salvarTokenNoCookie(token)) {
-        router.push("/register");
+        const decodedToken: JWTToken = getDecodedToken();
+        if (decodedToken.finishedRegister == true) {
+          router.push("/daily");
+        } else {
+          router.push("/register");
+        }
       } else {
         toast.error("Erro ao salvar o token de autenticação!", {
           description: "Tente novamente mais tarde e avise um desenvolvedor!",
