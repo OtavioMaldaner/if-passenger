@@ -80,3 +80,12 @@ export type user_type = {
   following: number,
   followedByUser: boolean
 }
+
+export type follow_type = {
+  user: {
+    id: string,
+    name: string,
+    image: string,
+    course: { name: string }
+  }
+}

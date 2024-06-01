@@ -39,6 +39,11 @@ export default function Follow({
     <Button
       size="user"
       variant={isFollowing ? "following" : "follow"}
+      style={
+        isFollowing
+          ? { backgroundColor: "#202028" }
+          : { backgroundColor: "#2563EB" }
+      }
       type="button"
       onClick={handleFollow}
     >

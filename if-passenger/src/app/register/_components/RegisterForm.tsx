@@ -22,6 +22,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Cookie from "js-cookie";
 import { useRouter } from "next/navigation";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import * as z from "zod";
@@ -68,9 +69,14 @@ export default function RegisterForm({
   const hasCity = form.watch("city");
   const hasCourse = form.watch("course");
 
+  const [submitType, setSubmitType] = useState<"register" | "registerCar">(
+    "register"
+  );
+
   const cityId = cities.find((city) => city.nome == hasCity)?.id;
 
   const handleSubmitForm = async (values: z.infer<typeof formSchema>) => {
+    // console.log(submitType);
     const req = await api.post(
       "/register/user",
       {
@@ -90,7 +96,11 @@ export default function RegisterForm({
       toast("Cadastro realizado com sucesso!");
       const { token } = req.data;
       if (salvarTokenNoCookie(token)) {
-        router.push("/homepage");
+        if (submitType === "register") {
+          router.push("/homepage");
+        } else {
+          router.push("/register/car");
+        }
       } else {
         toast.error("Erro ao salvar o token de autenticação!", {
           description: "Tente novamente mais tarde e avise um desenvolvedor!",
@@ -114,6 +124,7 @@ export default function RegisterForm({
           city: hasCity,
           course: values.course,
           registerNumber: Number(values.registrationNumber),
+          description: values.description,
         },
         {
           headers: {
@@ -147,7 +158,10 @@ export default function RegisterForm({
   return (
     <Form {...form}>
       <div className="flex w-screen justify-center">
-        <form className="text-white flex flex-col gap-7 max-w-xs w-full">
+        <form
+          className="text-white flex flex-col gap-7 max-w-xs w-full"
+          onSubmit={form.handleSubmit(handleSubmitForm)}
+        >
           <FormField
             name="city"
             control={form.control}
@@ -247,12 +261,13 @@ export default function RegisterForm({
             )}
           />
           <div className="flex justify-between flex-row-reverse">
-            <Button onClick={() => handleSubmitForm(form.getValues())}>
+            <Button type="submit" onClick={() => setSubmitType("register")}>
               Enviar
             </Button>
             <Button
+              type="submit"
               variant="outline"
-              onClick={() => handleSubmitAndRegisterCar(form.getValues())}
+              onClick={() => setSubmitType("registerCar")}
             >
               Registrar Veículo
             </Button>
