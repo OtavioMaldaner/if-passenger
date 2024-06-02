@@ -86,6 +86,33 @@ export type follow_type = {
     id: string,
     name: string,
     image: string,
+    registrationNumber: number,
     course: { name: string }
   }
+}
+
+export type single_trip_type = {
+  driver: {
+    name: string,
+    id: string,
+    image: string,
+    registrationNumber: number,
+    course: {
+      name: string
+    },
+  },
+  AddressFrom: {
+    name: string
+  },
+  AddressTo: {
+    name: string
+  },
+  when: string,
+  price: string,
+  id: string,
+  maxPassengers: number,
+  notes: string,
+  passengers: {
+    id: string,
+  }[]
 }

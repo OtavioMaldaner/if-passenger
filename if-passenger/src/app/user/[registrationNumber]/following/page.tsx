@@ -6,7 +6,7 @@ import { cookies } from "next/headers";
 import Image from "next/image";
 import Link from "next/link";
 
-export default async function Followers({
+export default async function Following({
   params,
 }: {
   params: { registrationNumber: string };
@@ -14,12 +14,12 @@ export default async function Followers({
   const registrationNumber: string = params.registrationNumber;
   const token = cookies().get("user_token")?.value;
 
-  const userRequest = await api.get(`/followers/${registrationNumber}`, {
+  const userRequest = await api.get(`/following/${registrationNumber}`, {
     headers: {
       Authorization: `Bearer ${token}`,
     },
   });
-  const followers: follow_type[] = userRequest.data.followers;
+  const followers: follow_type[] = userRequest.data.following;
 
   return (
     <main>
@@ -32,7 +32,7 @@ export default async function Followers({
         </Link>
       </Header>
       <section className="flex flex-col items-center gap-9">
-        <h1 className="text-2xl">Seguidores</h1>
+        <h1 className="text-2xl">Seguindo</h1>
         <div className="flex flex-col items-center gap-9">
           {followers ? (
             followers.map((follower) => (
@@ -58,7 +58,7 @@ export default async function Followers({
               </Link>
             ))
           ) : (
-            <span>Nenhum usuário segue esse perfil</span>
+            <span>Esse usuário não segue ninguém ainda.</span>
           )}
         </div>
       </section>
