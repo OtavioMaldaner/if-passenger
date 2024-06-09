@@ -483,7 +483,7 @@ export default function CreateTripForm({
                       const dayOfWeek = date.getDay();
                       for (
                         let d = new Date(date);
-                        d <= dateInTwoWeeks;
+                        d < dateInTwoWeeks;
                         d.setDate(d.getDate() + 1)
                       ) {
                         const currentDate = new Date(d);
