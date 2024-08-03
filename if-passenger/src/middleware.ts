@@ -15,19 +15,6 @@ export function middleware(request: NextRequest) {
             },
         });
     }
-
-    var hoje = new Date();
-
-    var expiracao = new Date(hoje);
-    expiracao.setHours(23, 59, 59, 999);
-
-    var expiracaoFormatada = expiracao.toUTCString();
-
-    return NextResponse.next({
-        headers: {
-            'Set-Cookie': `accessedToday=true; path=/; expires=${expiracaoFormatada}`,
-        },
-    });
 }
 
 export const config = {

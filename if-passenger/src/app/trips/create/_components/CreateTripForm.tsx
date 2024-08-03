@@ -88,6 +88,18 @@ export default function CreateTripForm({
   default_vehicles: default_vehicles_type[];
 }) {
   const center = { lat: -29.45553697, lng: -51.29300846 };
+  const getInitialDate = () => {
+    const today = new Date();
+    const day = today.getDay();
+
+    if (day === 6) {
+      today.setDate(today.getDate() + 2);
+    } else if (day === 0) {
+      today.setDate(today.getDate() + 1);
+    }
+
+    return today;
+  };
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -95,7 +107,7 @@ export default function CreateTripForm({
       destination: "",
       transportType: "",
       passengers: "",
-      date: new Date(),
+      date: getInitialDate(),
       recurrency: "",
       description: "",
       finalPrice: "",

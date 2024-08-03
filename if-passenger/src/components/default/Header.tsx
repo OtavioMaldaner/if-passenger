@@ -1,7 +1,15 @@
 "use client";
 import { getDecodedToken, logOut } from "@/app/api/functions";
 import { JWTToken } from "@/app/api/types";
-import { Bell, Car, Home, Map, PlaneTakeoff, User } from "lucide-react";
+import {
+  Bell,
+  Calendar,
+  Car,
+  Home,
+  Map,
+  PlaneTakeoff,
+  User,
+} from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -78,6 +86,9 @@ export default function Header({ children }: { children?: React.ReactNode }) {
               </Link>
               <Link className="flex items-center gap-3" href="/trips/create">
                 <PlaneTakeoff className="text-primary" size={18} /> Criar Viagem
+              </Link>
+              <Link className="flex items-center gap-3" href="/daily">
+                <Calendar className="text-primary" size={18} /> Resumo do Dia
               </Link>
             </div>
           </SheetFooter>

@@ -108,11 +108,35 @@ export type single_trip_type = {
     name: string
   },
   when: string,
-  price: string,
+  price: number,
   id: string,
   maxPassengers: number,
   notes: string,
   passengers: {
     id: string,
+  }[]
+}
+
+export type daily_trip_type = {
+  driver: {
+    name: string,
+    id: string,
+    image: string,
+  },
+  AddressFrom: {
+    name: string
+  },
+  AddressTo: {
+    name: string
+  },
+  when: string,
+  price: number,
+  id: string,
+  passengers: {
+    id: string,
+    User: {
+      image: string,
+      name: string
+    }[]
   }[]
 }
