@@ -44,7 +44,13 @@ import {
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import Cookie from "js-cookie";
-import { CalendarIcon, Clock2, DollarSign, LandPlot } from "lucide-react";
+import {
+  CalendarIcon,
+  Clock,
+  Clock2,
+  DollarSign,
+  LandPlot,
+} from "lucide-react";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
@@ -69,7 +75,16 @@ const formSchema = z.object({
       message: "A capacidade deve ser um número positivo menor que 7.",
     }
   ),
-  date: z.date(),
+  date: z.date().refine(
+    (date) => {
+      const day = date.getDay();
+      return day > 0 && day < 6;
+    },
+    {
+      message: "Você não pode criar uma viagem para o final de semana!",
+    }
+  ),
+  time: z.string(),
   recurrency: z.string().uuid(),
   description: z.string().optional(),
   finalPrice: z.string({
@@ -108,6 +123,7 @@ export default function CreateTripForm({
       transportType: "",
       passengers: "",
       date: getInitialDate(),
+      time: "06:00",
       recurrency: "",
       description: "",
       finalPrice: "",
@@ -474,6 +490,37 @@ export default function CreateTripForm({
                     />
                   </PopoverContent>
                 </Popover>
+                <FormDescription>
+                  Neste campo você deve selecionar a data da viagem. Não será
+                  possível criar viagens para o final de semana!
+                </FormDescription>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            name="time"
+            control={form.control}
+            render={({ field }) => (
+              <FormItem className="flex flex-col">
+                <FormControl>
+                  <Input
+                    type="time"
+                    onSelect={(time) => {
+                      field.onChange(time);
+                    }}
+                    min="06:00"
+                    max="22:30"
+                    placeholder="Selecione a hora de saída da viagem"
+                    className="bg-transparent"
+                  />
+                </FormControl>
+                <FormDescription>
+                  Neste campo você deve inserir a hora de saída da viagem. A
+                  hora inicial que pode ser selecionada é 06:00 e a hora final é
+                  22:30.
+                </FormDescription>
                 <FormMessage />
               </FormItem>
             )}
