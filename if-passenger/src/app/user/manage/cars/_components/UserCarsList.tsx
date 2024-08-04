@@ -1,4 +1,6 @@
+"use client";
 import { user_car_type } from "@/app/api/types";
+import { useRouter } from "next/navigation";
 import CarItem from "./CarItem";
 
 export default function UserCarsList({ cars }: { cars: user_car_type[] }) {

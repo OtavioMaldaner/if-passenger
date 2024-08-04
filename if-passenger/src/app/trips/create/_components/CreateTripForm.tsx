@@ -139,6 +139,7 @@ export default function CreateTripForm({
       transportType: vehicle,
       description: notes,
       recurrency: recurrancy,
+      time,
     } = values;
 
     try {
@@ -155,11 +156,11 @@ export default function CreateTripForm({
             addresses.find((address) => address.name === destination).id
           ),
           vehicle,
-          directionsResponse: JSON.stringify(directionsResponse),
           notes,
           recurrancy,
           distance,
           duration,
+          time,
           recommendedPrice: Number(calculateRecommendedPrice()?.split(" ")[0]),
         },
         {

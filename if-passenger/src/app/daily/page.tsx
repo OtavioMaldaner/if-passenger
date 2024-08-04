@@ -19,7 +19,7 @@ export default async function DailyPage() {
       <DailtTrips trips={request.data} />
       <footer className="fixed bottom-0 my-6 w-full px-4 flex justify-end">
         <Link href="/homepage">
-          <Button className="text-xl">Entrar</Button>
+          <Button>Entrar</Button>
         </Link>
       </footer>
     </main>
