@@ -23,6 +23,7 @@ import {
 } from "@react-google-maps/api";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
+import Cookies from "js-cookie";
 import { Clock, DollarSign, Map, MapPin, Users2 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -30,24 +31,31 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
-export default function Trip({ trip }: { trip: single_trip_type }) {
+export default function Trip({
+  trip,
+  userRequested,
+}: {
+  trip: single_trip_type;
+  userRequested: boolean;
+}) {
   const router = useRouter();
 
-  const token: JWTToken = getDecodedToken();
+  const token: string | undefined = Cookies.get("user_token");
+  const decoded_token: JWTToken = getDecodedToken();
   const center = { lat: -29.45553697, lng: -51.29300846 };
   const [map, setMap] = useState<google.maps.Map | null>(null);
   const [directionsResponse, setDirectionsResponse] =
     useState<google.maps.DirectionsResult | null>(null);
   const { isLoaded } = useJsApiLoader({
     googleMapsApiKey: process.env.NEXT_PUBLIC_API_GOOGLE_MAPS ?? "",
-    id: "MyMap2",
-    libraries: ["places"], // Ajustado para a biblioteca correta
+    id: "MyMap",
+    libraries: ["places"],
   });
 
   const requestRide = async () => {
     try {
       const request = await api.post(
-        "/requestRide",
+        "/tripRequests",
         {
           tripId: trip.id,
         },
@@ -59,7 +67,7 @@ export default function Trip({ trip }: { trip: single_trip_type }) {
       );
       if (request.status == 200 || request.status == 201) {
         toast("Solicitação de carona enviada com sucesso", {
-          description: `Aguarde a resposta de <strong>${trip.driver.name} para adicionar a viagem em sua agenda!</strong>`,
+          description: `Aguarde a resposta de ${trip.driver.name} para adicionar a viagem em sua agenda!`,
         });
       }
     } catch (e) {
@@ -76,7 +84,7 @@ export default function Trip({ trip }: { trip: single_trip_type }) {
         },
         {
           headers: {
-            Authorization: `Bearer ${token}`,
+            Authorization: `Bearer ${decoded_token}`,
           },
         }
       );
@@ -248,7 +256,7 @@ export default function Trip({ trip }: { trip: single_trip_type }) {
 
           <div className="mt-10 w-full flex justify-center items-center">
             <div>
-              {trip.driver.id == token.sub ? (
+              {trip.driver.id == decoded_token.sub ? (
                 <AlertDialog>
                   <AlertDialogTrigger asChild>
                     <Button variant={"destructive"}>Excluir viagem</Button>
@@ -273,7 +281,13 @@ export default function Trip({ trip }: { trip: single_trip_type }) {
                   </AlertDialogContent>
                 </AlertDialog>
               ) : (
-                <Button onClick={() => requestRide}>Pedir carona</Button>
+                <>
+                  {!userRequested ? (
+                    <Button onClick={() => requestRide()}>Pedir carona</Button>
+                  ) : (
+                    <Button variant="ghost">Aguardando Resposta</Button>
+                  )}
+                </>
               )}
             </div>
           </div>

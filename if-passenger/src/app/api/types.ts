@@ -140,3 +140,13 @@ export type daily_trip_type = {
     }[]
   }[]
 }
+
+export type notification_type = {
+  id: number;
+  userId: string;
+  type: string;
+  content: string;
+  happenedAt: string;
+  followReqId: number | null;
+  deletedAt: string | null;
+}

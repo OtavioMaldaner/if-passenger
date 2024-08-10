@@ -1,31 +1,21 @@
-import { api } from "@/app/api";
-import { single_trip_type } from "@/app/api/types";
 import Header from "@/components/default/Header";
 import { ChevronLeft } from "lucide-react";
 import { cookies } from "next/headers";
-import Image from "next/image";
 import Link from "next/link";
-import Trip from "./_components/Trip";
+import { api } from "../api";
+import { notification_type } from "../api/types";
+import Notifications from "./_components/Notifications";
 
-export default async function TripPage({ params }: { params: { id: string } }) {
-  const id: string = params.id;
+export default async function NotificationsPage() {
   const token = cookies().get("user_token")?.value;
 
-  const trip_request = await api.get(`/trip/${id}`, {
+  const request = await api.get("/notifications", {
     headers: {
       Authorization: `Bearer ${token}`,
     },
   });
 
-  const user_trip_request = await api.get(`/tripRequests/${id}`, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  });
-
-  const user_requested = user_trip_request.data.requested;
-
-  const trip: single_trip_type = trip_request.data;
+  const request_data: notification_type[] = request.data;
 
   return (
     <main className="flex flex-col gap-7">
@@ -39,7 +29,8 @@ export default async function TripPage({ params }: { params: { id: string } }) {
       </Header>
 
       <section className="flex flex-col items-center justify-center w-full">
-        <Trip trip={trip} userRequested={user_requested} />
+        <h1>Notificações</h1>
+        <Notifications notifications={request_data} />
       </section>
     </main>
   );

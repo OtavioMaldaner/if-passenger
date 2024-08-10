@@ -36,9 +36,19 @@ export default function DailtTrips({ trips }: { trips: daily_trip_type[] }) {
             <h3>Você não possui viagens no dia de hoje!</h3>
             <Link href="/homepage">Se inscreva em uma viagem na Homepage</Link>
           </>
-        ) : (
+        ) : trips.length == 1 ? (
           <span>
             No dia de hoje você possui {trips.length} viagem marcada. <br /> O
+            valor total gasto em viagens será de R$
+            {Intl.NumberFormat("pt-BR", {
+              style: "currency",
+              currency: "BRL",
+            }).format(all_cost)}
+            .
+          </span>
+        ) : (
+          <span>
+            No dia de hoje você possui {trips.length} viagens marcadas. <br /> O
             valor total gasto em viagens será de R$
             {Intl.NumberFormat("pt-BR", {
               style: "currency",
