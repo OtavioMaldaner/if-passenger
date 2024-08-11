@@ -146,7 +146,15 @@ export type notification_type = {
   userId: string;
   type: string;
   content: string;
+  image: string;
   happenedAt: string;
-  followReqId: number | null;
+  tripReqId: number | null;
   deletedAt: string | null;
+}
+
+export enum notification_content_types {
+  TRIP_REQUEST = "TRIP_REQUEST",
+  STARTED_FOLLOW = "STARTED_FOLLOW",
+  ACCEPTED_TRIP_REQUEST = "ACCEPTED_TRIP_REQUEST",
+  REFUSED_TRIP_REQUEST = "REFUSED_TRIP_REQUEST"
 }
