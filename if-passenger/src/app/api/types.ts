@@ -114,6 +114,16 @@ export type single_trip_type = {
   notes: string,
   passengers: {
     id: string,
+    User: {
+      image: string,
+      name: string,
+      course: {
+        name: string
+      },
+      Following: {
+        userId: string
+      }
+    }
   }[]
 }
 
