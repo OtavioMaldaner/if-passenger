@@ -23,7 +23,7 @@ export default async function TripPage({ params }: { params: { id: string } }) {
     },
   });
 
-  const user_requested = user_trip_request.data.requested;
+  const user_requested = user_trip_request.data;
 
   const trip: single_trip_type = trip_request.data;
 

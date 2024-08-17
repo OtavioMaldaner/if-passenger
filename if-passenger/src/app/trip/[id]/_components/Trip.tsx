@@ -24,7 +24,7 @@ import {
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import Cookies from "js-cookie";
-import { Clock, DollarSign, Map, MapPin, Users2 } from "lucide-react";
+import { Car, Clock, DollarSign, Map, MapPin, Users2 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -36,7 +36,11 @@ export default function Trip({
   userRequested,
 }: {
   trip: single_trip_type;
-  userRequested: boolean;
+  userRequested: {
+    requested: boolean;
+    accepted: boolean;
+    deletedAt: Date | null;
+  };
 }) {
   const router = useRouter();
 
@@ -72,6 +76,25 @@ export default function Trip({
       }
     } catch (e) {
       toast("Erro ao pedir carona! Tente novamente mais tarde!");
+    }
+  };
+
+  const cancelRide = async () => {
+    try {
+      const passengerId = trip.passengers
+        .filter((passenger) => passenger.User?.id === decoded_token.sub)
+        .map((passenger) => passenger.id)[0];
+
+      const request = await api.delete(`/ride/${passengerId}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      if (request.status == 200 || request.status == 201) {
+        toast("Carona cancelada com sucesso!");
+      }
+    } catch (e) {
+      toast("Erro ao cancelar a carona! Tente novamente mais tarde!");
     }
   };
 
@@ -182,55 +205,131 @@ export default function Trip({
             </>
           )}
         </div>
-        <div className="grid w-full grid-cols-2 mt-2 gap-[10px]">
-          <span className="flex items-center gap-1">
-            <MapPin className="text-primary" size={18} />
-            {trip.AddressFrom.name.split(", ")[1]}
-          </span>
-          <span className="flex items-center gap-1">
-            <Clock className="text-primary" size={18} />
-            {format(trip.when, "dd ' de 'MMMM', ás 'HH:mm", {
-              locale: ptBR,
-            })}
-          </span>
-          <span className="flex items-center gap-1">
-            <Map className="text-primary" size={18} />
-            {trip.AddressTo.name.split(", ")[1]}
-          </span>
+        {!userRequested.accepted ? (
+          <div className="grid w-full grid-cols-2 mt-2 gap-[10px]">
+            <span className="flex items-center gap-1">
+              <MapPin className="text-primary" size={18} />
+              {trip.AddressFrom.name.split(", ")[1]}
+            </span>
+            <span className="flex items-center gap-1">
+              <Clock className="text-primary" size={18} />
+              {format(trip.when, "dd ' de 'MMMM', ás 'HH:mm", {
+                locale: ptBR,
+              })}
+            </span>
+            <span className="flex items-center gap-1">
+              <Map className="text-primary" size={18} />
+              {trip.AddressTo.name.split(", ")[1]}
+            </span>
 
-          <span className="flex items-center gap-1">
-            <DollarSign className="text-primary" size={18} />
-            {Intl.NumberFormat("pt-BR", {
-              style: "currency",
-              currency: "BRL",
-            }).format(Number(trip.price))}{" "}
-            / passageiro
-          </span>
+            <span className="flex items-center gap-1">
+              <DollarSign className="text-primary" size={18} />
+              {Intl.NumberFormat("pt-BR", {
+                style: "currency",
+                currency: "BRL",
+              }).format(Number(trip.price))}{" "}
+              / passageiro
+            </span>
 
-          <span className="flex items-center gap-1">
-            <Users2 className="text-primary" size={18} />
-            <div className="flex flex-col">
-              <span>
-                Máx:{" "}
-                {trip.maxPassengers != 1 ? (
-                  <>{trip.maxPassengers} passageiros</>
-                ) : (
-                  <>{trip.maxPassengers} passageiro</>
-                )}
+            <span className="flex items-center gap-1">
+              <Users2 className="text-primary" size={18} />
+              <div className="flex flex-col">
+                <span>
+                  Máx:{" "}
+                  {trip.maxPassengers != 1 ? (
+                    <>{trip.maxPassengers} passageiros</>
+                  ) : (
+                    <>{trip.maxPassengers} passageiro</>
+                  )}
+                </span>
+                <span className="whitespace-nowrap">
+                  Atual:{" "}
+                  {trip.passengers.length > 1 ? (
+                    <>{trip.passengers.length} passageiros</>
+                  ) : trip.passengers.length == 1 ? (
+                    <>{trip.passengers.length} passageiro</>
+                  ) : (
+                    <>Sem passageiros</>
+                  )}
+                </span>
+              </div>
+            </span>
+          </div>
+        ) : (
+          <div>
+            <div className="flex flex-col w-full mt-2 gap-[10px]">
+              <span className="flex items-center gap-1">
+                <MapPin className="text-primary" size={18} />
+                {trip.AddressFrom.name.replace(", Brazil", "")}
               </span>
-              <span className="whitespace-nowrap">
-                Atual:{" "}
-                {trip.passengers.length > 1 ? (
-                  <>{trip.passengers.length} passageiros</>
-                ) : trip.passengers.length == 1 ? (
-                  <>{trip.passengers.length} passageiro</>
-                ) : (
-                  <>Sem passageiros</>
+              <span className="flex items-center gap-1">
+                <Map className="text-primary" size={18} />
+                {trip.AddressTo.name.replace(", Brazil", "")}
+              </span>
+              <span className="flex items-center gap-1">
+                <Clock className="text-primary" size={18} />
+                {format(trip.when, "dd ' de 'MMMM', ás 'HH:mm", {
+                  locale: ptBR,
+                })}
+              </span>
+              <span className="flex items-center gap-1">
+                <DollarSign className="text-primary" size={18} />
+                {Intl.NumberFormat("pt-BR", {
+                  style: "currency",
+                  currency: "BRL",
+                }).format(Number(trip.price))}{" "}
+                / passageiro
+              </span>
+              <span className="flex items-center gap-1">
+                <Car className="text-primary" size={18} />
+                {trip.car?.brand}{" "}
+                {trip.car?.model.replace(/(^\w{1})|(\s+\w{1})/g, (letra) =>
+                  letra.toUpperCase()
                 )}
+                , {trip.car?.licensePlate}
               </span>
             </div>
-          </span>
-        </div>
+            <div className="flex justify-end">
+              <div style={{ width: `${trip.passengers.length * 40 + 40}px` }}>
+                <div className="flex relative">
+                  <Link
+                    href={`/user/${trip.driver.registrationNumber}`}
+                    className="rounded-full max-w-[40px]"
+                  >
+                    <Image
+                      className="w-full rounded-full"
+                      key={trip.driver.id}
+                      src={trip.driver.image ?? ""}
+                      alt={trip.driver.name ?? ""}
+                      width={40}
+                      height={40}
+                      quality={100}
+                    />
+                  </Link>
+                  {trip.passengers.map((passenger, index) => {
+                    return (
+                      <Link
+                        href={`/user/${passenger.User?.registrationNumber}`}
+                        className={`rounded-full shadow-[-5px_0px_0px_1px_#09090B] max-w-[40px] absolute`}
+                        style={{ left: `${(index + 1) * 32}px` }}
+                      >
+                        <Image
+                          className="w-full rounded-full"
+                          key={passenger.id}
+                          src={passenger.User?.image ?? ""}
+                          alt={passenger.User?.name ?? ""}
+                          width={40}
+                          height={40}
+                          quality={100}
+                        />
+                      </Link>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
         <div className="w-full flex justify-center flex-col mt-5">
           {trip.notes ? (
             <div>
@@ -282,10 +381,21 @@ export default function Trip({
                 </AlertDialog>
               ) : (
                 <>
-                  {!userRequested ? (
+                  {!userRequested.requested ? (
                     <Button onClick={() => requestRide()}>Pedir carona</Button>
                   ) : (
-                    <Button variant="ghost">Aguardando Resposta</Button>
+                    <>
+                      {userRequested.requested && userRequested.accepted ? (
+                        <Button
+                          variant="destructive"
+                          onClick={() => cancelRide()}
+                        >
+                          Cancelar Carona
+                        </Button>
+                      ) : (
+                        <Button variant="ghost">Aguardando Resposta</Button>
+                      )}
+                    </>
                   )}
                 </>
               )}

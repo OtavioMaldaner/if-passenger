@@ -114,9 +114,11 @@ export type single_trip_type = {
   notes: string,
   passengers: {
     id: string,
-    User: {
+    User?: {
       image: string,
       name: string,
+      id: string,
+      registrationNumber: number,
       course: {
         name: string
       },
@@ -124,7 +126,12 @@ export type single_trip_type = {
         userId: string
       }
     }
-  }[]
+  }[],
+  car?: {
+    brand: string,
+    model: string,
+    licensePlate: string,
+  }
 }
 
 export type daily_trip_type = {
