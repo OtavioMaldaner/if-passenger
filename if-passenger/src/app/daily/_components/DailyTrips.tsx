@@ -5,6 +5,7 @@ import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import Cookies from "js-cookie";
 import Link from "next/link";
+import DailytripComponent from "./DailyTripComponent";
 
 export default function DailtTrips({ trips }: { trips: daily_trip_type[] }) {
   const decodedToken: JWTToken = getDecodedToken();
@@ -57,6 +58,11 @@ export default function DailtTrips({ trips }: { trips: daily_trip_type[] }) {
             .
           </span>
         )}
+      </section>
+      <section className="text-center mt-5">
+        {trips.map((trip) => {
+          return <DailytripComponent trip={trip} key={trip.id} />;
+        })}
       </section>
     </section>
   );

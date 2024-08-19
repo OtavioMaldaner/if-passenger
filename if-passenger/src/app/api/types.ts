@@ -131,7 +131,10 @@ export type single_trip_type = {
     brand: string,
     model: string,
     licensePlate: string,
-  }
+  },
+  DifferentVehicles?: {
+    name: string,
+  },
 }
 
 export type daily_trip_type = {
@@ -149,9 +152,17 @@ export type daily_trip_type = {
   when: string,
   price: number,
   id: string,
+  car?: {
+    brand: string,
+    licensePlate: string,
+    model: string
+  },
+  DifferentVehicles?: {
+    name: string,
+  },
   passengers: {
     id: string,
-    User: {
+    User?: {
       image: string,
       name: string
     }[]
