@@ -1,6 +1,6 @@
 "use client";
 import { api } from "@/app/api";
-import { getDecodedToken, salvarTokenNoCookie } from "@/app/api/functions";
+import { getDecodedToken } from "@/app/api/functions";
 import { citiesType, courseType, JWTToken } from "@/app/api/types";
 import { Button } from "@/components/ui/button";
 import {
@@ -10,7 +10,6 @@ import {
   FormItem,
   FormMessage,
 } from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
 import {
   Select,
   SelectContent,
@@ -22,63 +21,52 @@ import { Textarea } from "@/components/ui/textarea";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Cookie from "js-cookie";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
-import * as z from "zod";
+import { z } from "zod";
 
 const formSchema = z.object({
   city: z.string().refine((value) => value !== "0", {
     message: "A cidade é obrigatória.",
   }),
   course: z.number(),
-  registrationNumber: z
-    .string()
-    .max(10, "A matrícula deve ter 10 dígitos")
-    .min(10, "A matrícula deve ter 10 dígitos")
-    .refine((value) => /^[0-9]{10}$/i.test(value), {
-      message: "A matrícula deve conter 10 dígitos numéricos!",
-    }),
   description: z.string().optional(),
 });
 
-export default function RegisterForm({
-  cities,
+export default function EditProfile({
   courses,
+  cities,
 }: {
-  cities: citiesType[];
   courses: courseType[];
+  cities: citiesType[];
 }) {
-  const decoded_token: JWTToken = getDecodedToken();
   const router = useRouter();
-
+  const decoded_token: JWTToken = getDecodedToken();
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      city: "0",
-      course: 1,
-      registrationNumber: "",
-      description: "",
+      city: String(
+        cities.filter((city) => city.nome == decoded_token.city)[0].nome
+      ),
+      course: Number(
+        courses.filter((course) => course.name == decoded_token.course)[0].id
+      ),
+      description: decoded_token.description ?? "",
     },
   });
 
   const hasCity = form.watch("city");
 
-  const [submitType, setSubmitType] = useState<"register" | "registerCar">(
-    "register"
-  );
-
   const cityId = cities.find((city) => city.nome == hasCity)?.id;
 
   const handleSubmitForm = async (values: z.infer<typeof formSchema>) => {
     // console.log(submitType);
-    const req = await api.post(
+    const req = await api.patch(
       "/register/user",
       {
         cityId: cityId,
         city: hasCity,
         course: values.course,
-        registerNumber: Number(values.registrationNumber),
         description: values.description,
       },
       {
@@ -89,25 +77,9 @@ export default function RegisterForm({
     );
     if (req.status === 200 || req.status === 201) {
       toast("Cadastro realizado com sucesso!");
-      const { token } = req.data;
-      if (salvarTokenNoCookie(token)) {
-        if (submitType === "register") {
-          router.push("/homepage");
-        } else {
-          router.push("/register/car");
-        }
-      } else {
-        toast.error("Erro ao salvar o token de autenticação!", {
-          description: "Tente novamente mais tarde e avise um desenvolvedor!",
-        });
-      }
-    } else {
-      toast.error("Erro ao realizar o cadastro!", {
-        description: "Tente novamente mais tarde e avise um desenvolvedor!",
-      });
+      router.push("/homepage");
     }
   };
-
   return (
     <Form {...form}>
       <div className="flex w-screen justify-center">
@@ -177,24 +149,7 @@ export default function RegisterForm({
               </FormItem>
             )}
           />
-          <FormField
-            name="registrationNumber"
-            control={form.control}
-            render={({ field }) => (
-              <FormItem>
-                <FormControl>
-                  <Input
-                    {...field}
-                    onChange={(e) => {
-                      field.onChange(e);
-                    }}
-                    placeholder="Insira o seu número de matrícula"
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+
           <FormField
             name="description"
             control={form.control}
@@ -213,7 +168,7 @@ export default function RegisterForm({
               </FormItem>
             )}
           />
-          <div className="flex justify-between flex-row-reverse">
+          {/* <div className="flex justify-between flex-row-reverse">
             <Button type="submit" onClick={() => setSubmitType("register")}>
               Enviar
             </Button>
@@ -224,7 +179,7 @@ export default function RegisterForm({
             >
               Registrar Veículo
             </Button>
-          </div>
+          </div> */}
         </form>
       </div>
     </Form>
