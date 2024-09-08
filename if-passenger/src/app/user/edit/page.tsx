@@ -12,7 +12,7 @@ export default async function EditUser() {
   const courses: courseType[] = req.data;
 
   return (
-    <main className="flex flex-col items-center justify-center w-full gap-10">
+    <main className="flex flex-col items-center justify-center w-full h-full gap-10">
       <Header>
         <Link
           className="flex gap-1 items-center justify-center"

@@ -2,6 +2,17 @@
 import { api } from "@/app/api";
 import { getDecodedToken } from "@/app/api/functions";
 import { citiesType, courseType, JWTToken } from "@/app/api/types";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -76,7 +87,7 @@ export default function EditProfile({
       }
     );
     if (req.status === 200 || req.status === 201) {
-      toast("Cadastro realizado com sucesso!");
+      toast("Alterações realizadas com sucesso!");
       router.push("/homepage");
     }
   };
@@ -84,102 +95,121 @@ export default function EditProfile({
     <Form {...form}>
       <div className="flex w-screen justify-center">
         <form
-          className="text-white flex flex-col gap-7 max-w-xs w-full"
+          className="flex flex-col items-center justify-around"
           onSubmit={form.handleSubmit(handleSubmitForm)}
         >
-          <FormField
-            name="city"
-            control={form.control}
-            render={({ field }) => (
-              <FormItem>
-                <Select
-                  onValueChange={(value) => {
-                    field.onChange({ target: { value } });
-                  }}
-                  value={field.value}
-                >
-                  <FormControl>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Selecione a cidade que mais frequenta" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    {cities.map((city) => (
-                      <SelectItem key={city.id} value={city.nome}>
-                        {city.nome}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <FormField
-            name="course"
-            control={form.control}
-            render={({ field }) => (
-              <FormItem>
-                <Select
-                  onValueChange={(value) => {
-                    field.onChange({ target: { value } });
-                  }}
-                  value={String(field.value)}
-                >
-                  <FormControl>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Selecione seu curso">
-                        {
-                          courses.find(
-                            (course) => String(field.value) == String(course.id)
-                          )?.name
-                        }
-                      </SelectValue>
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    {courses.map((course) => (
-                      <SelectItem key={course.id} value={course.id}>
-                        {course.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            name="description"
-            control={form.control}
-            render={({ field }) => (
-              <FormItem>
-                <FormControl>
-                  <Textarea
-                    {...field}
-                    onChange={(e) => {
-                      field.onChange(e);
+          <div className="text-white flex flex-col gap-7 max-w-xs w-full">
+            <FormField
+              name="city"
+              control={form.control}
+              render={({ field }) => (
+                <FormItem>
+                  <Select
+                    onValueChange={(value) => {
+                      field.onChange({ target: { value } });
                     }}
-                    placeholder="Insira uma descrição"
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          {/* <div className="flex justify-between flex-row-reverse">
-            <Button type="submit" onClick={() => setSubmitType("register")}>
-              Enviar
-            </Button>
-            <Button
-              type="submit"
-              variant="outline"
-              onClick={() => setSubmitType("registerCar")}
-            >
-              Registrar Veículo
-            </Button>
-          </div> */}
+                    value={field.value}
+                  >
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Selecione a cidade que mais frequenta" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {cities.map((city) => (
+                        <SelectItem key={city.id} value={city.nome}>
+                          {city.nome}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              name="course"
+              control={form.control}
+              render={({ field }) => (
+                <FormItem>
+                  <Select
+                    onValueChange={(value) => {
+                      field.onChange({ target: { value } });
+                    }}
+                    value={String(field.value)}
+                  >
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Selecione seu curso">
+                          {
+                            courses.find(
+                              (course) =>
+                                String(field.value) == String(course.id)
+                            )?.name
+                          }
+                        </SelectValue>
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {courses.map((course) => (
+                        <SelectItem key={course.id} value={course.id}>
+                          {course.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              name="description"
+              control={form.control}
+              render={({ field }) => (
+                <FormItem>
+                  <FormControl>
+                    <Textarea
+                      {...field}
+                      onChange={(e) => {
+                        field.onChange(e);
+                      }}
+                      placeholder="Insira uma descrição"
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+          <div className="flex flex-col mt-80 gap-4 justify-between">
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button variant="destructive">Excluir Perfil</Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>
+                    Tem certeza que deseja excluir o seu perfil?
+                  </AlertDialogTitle>
+                  <AlertDialogDescription>
+                    Essa ação não pode ser desfeita. Ao excluir seu perfil todos
+                    os registros da sua conta serão excluídos e não poderão mais
+                    ser recuperados!
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                  <AlertDialogAction
+                  // onClick={() => deleteTrip()}
+                  >
+                    Excluir
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+            <Button type="submit">Editar Perfil</Button>
+          </div>
         </form>
       </div>
     </Form>
