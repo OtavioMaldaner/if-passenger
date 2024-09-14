@@ -14,7 +14,7 @@ export default function User({ user }: { user: user_type }) {
   const decoded_token: JWTToken = getDecodedToken();
   const router = useRouter();
   return (
-    <section className="w-full px-6 flex flex-col gap-7">
+    <section className="w-full px-6 flex flex-col gap-7 mt-[110px]">
       <div className="flex items-center justify-start gap-3 w-full">
         <Image
           src={user.image}

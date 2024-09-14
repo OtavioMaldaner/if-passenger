@@ -18,13 +18,21 @@ export default function DailytripComponent({
         <span className="flex items-center gap-3">
           <MapPin className="text-primary" size={18} />
           <span>
-            {trip.AddressFrom.name.replace(", Brazil", "").replace(" - RS", "")}
+            {trip.AddressFrom.name
+              .replace(", Brazil", "")
+              .replace(" - RS", "")
+              .substring(0, 30)
+              .concat("...")}
           </span>
         </span>
         <span className="flex items-center gap-3">
           <Map className="text-primary" size={18} />
           <span>
-            {trip.AddressTo.name.replace(", Brazil", "").replace(" - RS", "")}
+            {trip.AddressTo.name
+              .replace(", Brazil", "")
+              .replace(" - RS", "")
+              .substring(0, 30)
+              .concat("...")}
           </span>
         </span>
         <span className="flex items-center gap-3">

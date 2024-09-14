@@ -56,7 +56,7 @@ export default async function CreateTrip() {
   const user_cars: user_car_type[] = request_car.data;
 
   return (
-    <main className="flex flex-col items-center justify-center w-full">
+    <main className="flex">
       <Header>
         <Link
           className="flex gap-1 items-center justify-center"
@@ -65,13 +65,15 @@ export default async function CreateTrip() {
           <ChevronLeft size={18} /> Página Inicial
         </Link>
       </Header>
-      <h1 className="font-bold text-xl pb-8">Criar Viagem</h1>
-      <CreateTripForm
-        addresses={addressess}
-        gas_price={gas_price}
-        user_cars={user_cars}
-        default_vehicles={secondary_vehicles}
-      />
+      <section className="mt-[110px] flex flex-col items-center justify-center w-full">
+        <h1 className="font-bold text-xl pb-8">Criar Viagem</h1>
+        <CreateTripForm
+          addresses={addressess}
+          gas_price={gas_price}
+          user_cars={user_cars}
+          default_vehicles={secondary_vehicles}
+        />
+      </section>
     </main>
   );
 }

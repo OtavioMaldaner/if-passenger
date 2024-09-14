@@ -38,7 +38,7 @@ export default async function TripPage({ params }: { params: { id: string } }) {
         </Link>
       </Header>
 
-      <section className="flex flex-col items-center justify-center w-full">
+      <section className="flex flex-col items-center justify-center w-full mt-[110px]">
         <Trip trip={trip} userRequested={user_requested} />
       </section>
     </main>

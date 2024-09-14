@@ -25,7 +25,7 @@ export default function Header({ children }: { children?: React.ReactNode }) {
   const token: JWTToken = getDecodedToken();
   const router = useRouter();
   return (
-    <header className="flex justify-between items-center p-4 w-full">
+    <header className="flex justify-between items-center p-4 w-full fixed bg-background z-50">
       <Sheet>
         <SheetTrigger asChild>
           <Image

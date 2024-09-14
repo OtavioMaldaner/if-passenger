@@ -14,14 +14,16 @@ export default async function DailyPage() {
   });
 
   return (
-    <main className="flex flex-col gap-10 items-center justify-center">
+    <main className="flex justify-center">
       <Header />
-      <DailtTrips trips={request.data} />
-      <footer className="fixed bottom-0 my-6 w-full px-4 flex justify-end">
-        <Link href="/homepage">
-          <Button>Entrar</Button>
-        </Link>
-      </footer>
+      <section className="mt-[110px] flex flex-col gap-10 items-center justify-center">
+        <DailtTrips trips={request.data} />
+        <footer className="fixed bottom-0 my-6 w-full px-4 flex justify-end">
+          <Link href="/homepage">
+            <Button>Entrar</Button>
+          </Link>
+        </footer>
+      </section>
     </main>
   );
 }

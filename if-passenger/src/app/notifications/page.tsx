@@ -28,7 +28,7 @@ export default async function NotificationsPage() {
         </Link>
       </Header>
 
-      <section className="flex flex-col items-center justify-center w-full">
+      <section className="flex flex-col items-center justify-center w-full mt-[110px]">
         <h1>Notificações</h1>
         <Notifications notifications={request_data} />
       </section>

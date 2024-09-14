@@ -1,6 +1,6 @@
 "use client";
 import { api } from "@/app/api";
-import { getDecodedToken } from "@/app/api/functions";
+import { getDecodedToken, salvarTokenNoCookie } from "@/app/api/functions";
 import { citiesType, courseType, JWTToken } from "@/app/api/types";
 import {
   AlertDialog,
@@ -72,11 +72,10 @@ export default function EditProfile({
 
   const handleSubmitForm = async (values: z.infer<typeof formSchema>) => {
     // console.log(submitType);
-    const req = await api.patch(
-      "/register/user",
+    const req = await api.put(
+      "/user",
       {
         cityId: cityId,
-        city: hasCity,
         course: values.course,
         description: values.description,
       },
@@ -86,9 +85,34 @@ export default function EditProfile({
         },
       }
     );
-    if (req.status === 200 || req.status === 201) {
-      toast("Alterações realizadas com sucesso!");
+    if (req.status === 200) {
+      salvarTokenNoCookie(req.data.token);
+      toast(req.data.message);
       router.push("/homepage");
+    } else {
+      toast(req.data.message);
+    }
+  };
+
+  const deleteUser = async () => {
+    try {
+      const req = await api.delete("/user", {
+        headers: {
+          Authorization: `Bearer ${Cookie.get("user_token")}`,
+        },
+      });
+
+      // Se a requisição for bem-sucedida (status 200)
+      if (req.status === 200) {
+        Cookie.remove("user_token"); // Remove o token do cookie
+        toast("Usuário deletado com sucesso.");
+      }
+    } catch (error) {
+      if (error.response) {
+        toast(error.response.data.message || "Erro ao deletar o usuário.");
+      } else {
+        toast("Ocorreu um erro. Tente novamente mais tarde.");
+      }
     }
   };
   return (
@@ -200,9 +224,7 @@ export default function EditProfile({
                 </AlertDialogHeader>
                 <AlertDialogFooter>
                   <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                  <AlertDialogAction
-                  // onClick={() => deleteTrip()}
-                  >
+                  <AlertDialogAction onClick={() => deleteUser()}>
                     Excluir
                   </AlertDialogAction>
                 </AlertDialogFooter>

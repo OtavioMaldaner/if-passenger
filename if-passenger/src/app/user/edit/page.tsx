@@ -12,7 +12,7 @@ export default async function EditUser() {
   const courses: courseType[] = req.data;
 
   return (
-    <main className="flex flex-col items-center justify-center w-full h-full gap-10">
+    <main className="flex">
       <Header>
         <Link
           className="flex gap-1 items-center justify-center"
@@ -22,9 +22,11 @@ export default async function EditUser() {
         </Link>
       </Header>
 
-      <h1 className="text-xl">Editar Perfil</h1>
+      <section className="mt-[110px] flex flex-col items-center justify-center w-full h-full gap-10">
+        <h1 className="text-xl">Editar Perfil</h1>
 
-      <EditProfile cities={cities} courses={courses} />
+        <EditProfile cities={cities} courses={courses} />
+      </section>
     </main>
   );
 }
