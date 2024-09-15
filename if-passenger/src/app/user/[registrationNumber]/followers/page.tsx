@@ -22,7 +22,7 @@ export default async function Followers({
   const followers: follow_type[] = userRequest.data.followers;
 
   return (
-    <main>
+    <main className="flex">
       <Header>
         <Link
           className="flex gap-1 items-center justify-center"
@@ -31,7 +31,7 @@ export default async function Followers({
           <ChevronLeft size={18} /> Página Anterior
         </Link>
       </Header>
-      <section className="flex flex-col items-center gap-9">
+      <section className="flex flex-col items-center gap-9 mt-[110px]">
         <h1 className="text-2xl">Seguidores</h1>
         <div className="flex flex-col items-center gap-9">
           {followers ? (

@@ -1,5 +1,5 @@
 import { api } from "@/app/api";
-import { user_type } from "@/app/api/types";
+import { trip_type, user_type } from "@/app/api/types";
 import Header from "@/components/default/Header";
 import { ChevronLeft } from "lucide-react";
 import { cookies } from "next/headers";
@@ -19,7 +19,15 @@ export default async function userPage({
       Authorization: `Bearer ${token}`,
     },
   });
+
+  const recent_trips_req = await api.get("/trips/recent", {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
   const user: user_type = userRequest.data;
+  const recent_trips: trip_type[] = recent_trips_req.data;
   return (
     <main className="flex flex-col items-center gap-10">
       <Header>
@@ -30,7 +38,7 @@ export default async function userPage({
           <ChevronLeft size={18} /> Página Inicial
         </Link>
       </Header>
-      <User user={user} />
+      <User trips={recent_trips} user={user} />
     </main>
   );
 }

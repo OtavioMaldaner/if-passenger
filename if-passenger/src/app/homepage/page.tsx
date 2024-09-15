@@ -1,20 +1,11 @@
 "use client";
+import Feed from "@/components/default/Feed";
 import Header from "@/components/default/Header";
-import {
-  Select,
-  SelectContent,
-  SelectGroup,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { SelectItem } from "@radix-ui/react-select";
 import Cookie from "js-cookie";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { FormEvent, useEffect, useState } from "react";
-import { api } from "../api";
+import { useSearchParams } from "next/navigation";
+import { useEffect, useState } from "react";
 import { getDecodedToken } from "../api/functions";
 import { JWTToken, trip_type } from "../api/types";
-import Feed from "./_components/Feed";
 import HeaderSelectGroup from "./_components/SelectGroup";
 export default function Homepage() {
   const token: JWTToken = getDecodedToken();
@@ -37,7 +28,7 @@ export default function Homepage() {
       <Header>
         <HeaderSelectGroup token={token} />
       </Header>
-      <section className="mt-[250px] z-0">
+      <section className="mt-[110px] z-0">
         <Feed trips={data} />
       </section>
     </main>

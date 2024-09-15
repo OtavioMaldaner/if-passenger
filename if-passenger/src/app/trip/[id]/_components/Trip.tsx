@@ -131,9 +131,11 @@ export default function Trip({
           origin: trip.AddressFrom.name,
           destination: trip.AddressTo.name,
           travelMode: google.maps.TravelMode.DRIVING,
-          region: "BR", // Região preferencial para a rota
+          region: "BR", // Região preferencial para a rota,
+          provideRouteAlternatives: true,
         });
         setDirectionsResponse(results);
+        // console.log(results);
       } catch (error) {
         console.error("Error fetching directions:", error);
       }
@@ -196,7 +198,10 @@ export default function Trip({
                 {
                   // Se a rota foi calculada, exibe a rota no mapa
                   directionsResponse ? (
-                    <DirectionsRenderer directions={directionsResponse} />
+                    <DirectionsRenderer
+                      directions={directionsResponse}
+                      routeIndex={1}
+                    />
                   ) : (
                     <Marker position={center} />
                   )
@@ -231,29 +236,31 @@ export default function Trip({
               / passageiro
             </span>
 
-            <span className="flex items-center gap-1">
-              <Users2 className="text-primary" size={18} />
-              <div className="flex flex-col">
-                <span>
-                  Máx:{" "}
-                  {trip.maxPassengers != 1 ? (
-                    <>{trip.maxPassengers} passageiros</>
-                  ) : (
-                    <>{trip.maxPassengers} passageiro</>
-                  )}
-                </span>
-                <span className="whitespace-nowrap">
-                  Atual:{" "}
-                  {trip.passengers.length > 1 ? (
-                    <>{trip.passengers.length} passageiros</>
-                  ) : trip.passengers.length == 1 ? (
-                    <>{trip.passengers.length} passageiro</>
-                  ) : (
-                    <>Sem passageiros</>
-                  )}
-                </span>
-              </div>
-            </span>
+            {trip.driver.id != decoded_token.sub && (
+              <span className="flex items-center gap-1">
+                <Users2 className="text-primary" size={18} />
+                <div className="flex flex-col">
+                  <span>
+                    Máx:{" "}
+                    {trip.maxPassengers != 1 ? (
+                      <>{trip.maxPassengers} passageiros</>
+                    ) : (
+                      <>{trip.maxPassengers} passageiro</>
+                    )}
+                  </span>
+                  <span className="whitespace-nowrap">
+                    Atual:{" "}
+                    {trip.passengers.length > 1 ? (
+                      <>{trip.passengers.length} passageiros</>
+                    ) : trip.passengers.length == 1 ? (
+                      <>{trip.passengers.length} passageiro</>
+                    ) : (
+                      <>Sem passageiros</>
+                    )}
+                  </span>
+                </div>
+              </span>
+            )}
           </div>
         ) : (
           <div>
@@ -353,54 +360,133 @@ export default function Trip({
             </div>
           )}
 
-          <div className="mt-10 w-full flex justify-center items-center">
-            <div>
-              {trip.driver.id == decoded_token.sub ? (
-                <AlertDialog>
-                  <AlertDialogTrigger asChild>
-                    <Button variant={"destructive"}>Excluir viagem</Button>
-                  </AlertDialogTrigger>
-                  <AlertDialogContent>
-                    <AlertDialogHeader>
-                      <AlertDialogTitle>
-                        Tem certeza que deseja excluir a viagem?
-                      </AlertDialogTitle>
-                      <AlertDialogDescription>
-                        Essa ação não pode ser desfeita. Os caroneiros serão
-                        comunicados da sua decisão, mas lembre de avisá-los
-                        novamente e evitar possíveis transtornos futuros!
-                      </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                      <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                      <AlertDialogAction onClick={() => deleteTrip()}>
-                        Continuar
-                      </AlertDialogAction>
-                    </AlertDialogFooter>
-                  </AlertDialogContent>
-                </AlertDialog>
-              ) : (
-                <>
-                  {!userRequested.requested ? (
-                    <Button onClick={() => requestRide()}>Pedir carona</Button>
-                  ) : (
-                    <>
-                      {userRequested.requested && userRequested.accepted ? (
-                        <Button
-                          variant="destructive"
-                          onClick={() => cancelRide()}
-                        >
-                          Cancelar Carona
-                        </Button>
-                      ) : (
-                        <Button variant="ghost">Aguardando Resposta</Button>
-                      )}
-                    </>
-                  )}
-                </>
-              )}
+          {new Date(trip.when) > new Date() ? (
+            <div className="mt-10 w-full flex justify-center items-center">
+              <div className="w-full">
+                {trip.driver.id == decoded_token.sub ? (
+                  <div className="flex flex-col justify-center items-center gap-8">
+                    <div className="w-full flex flex-col gap-4">
+                      <div className="w-full">
+                        <h3>Passageiros:</h3>
+                      </div>
+                      {trip.passengers.map((passenger) => {
+                        return (
+                          <div>
+                            <Link
+                              href={`/user/${passenger.User?.registrationNumber}`}
+                              key={passenger.User?.id}
+                              className="w-full flex gap-3"
+                            >
+                              <Image
+                                src={passenger.User?.image ?? ""}
+                                alt={passenger.User?.name ?? ""}
+                                width={50}
+                                height={50}
+                                quality={100}
+                                className="rounded-full max-h-[50px] max-w-[50px] h-[50px]"
+                              />
+                              <div className="flex flex-col justify-between">
+                                <span>
+                                  <strong>{passenger.User?.name}</strong>
+                                </span>
+                                <span>{passenger.User?.course.name}</span>
+                              </div>
+                            </Link>
+                          </div>
+                        );
+                      })}
+                    </div>
+                    <div>
+                      <Button variant="secondary" disabled>
+                        Adicionar Motorista Reserva
+                      </Button>
+                    </div>
+                    <div>
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button variant={"destructive"}>
+                            Excluir viagem
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>
+                              Tem certeza que deseja excluir a viagem?
+                            </AlertDialogTitle>
+                            <AlertDialogDescription>
+                              Essa ação não pode ser desfeita. Os caroneiros
+                              serão comunicados da sua decisão, mas lembre de
+                              avisá-los novamente e evitar possíveis transtornos
+                              futuros!
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                            <AlertDialogAction onClick={() => deleteTrip()}>
+                              Continuar
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
+                    </div>
+                  </div>
+                ) : (
+                  <>
+                    {!userRequested.requested ? (
+                      <Button onClick={() => requestRide()}>
+                        Pedir carona
+                      </Button>
+                    ) : (
+                      <>
+                        {userRequested.requested && userRequested.accepted ? (
+                          <Button
+                            variant="destructive"
+                            onClick={() => cancelRide()}
+                          >
+                            Cancelar Carona
+                          </Button>
+                        ) : (
+                          <Button variant="ghost">Aguardando Resposta</Button>
+                        )}
+                      </>
+                    )}
+                  </>
+                )}
+              </div>
             </div>
-          </div>
+          ) : (
+            <div className="w-full flex flex-col gap-4 mt-4">
+              <div className="w-full">
+                <h3>Passageiros:</h3>
+              </div>
+              {trip.passengers.map((passenger) => {
+                return (
+                  <div>
+                    <Link
+                      href={`/user/${passenger.User?.registrationNumber}`}
+                      key={passenger.User?.id}
+                      className="w-full flex gap-3"
+                    >
+                      <Image
+                        src={passenger.User?.image ?? ""}
+                        alt={passenger.User?.name ?? ""}
+                        width={50}
+                        height={50}
+                        quality={100}
+                        className="rounded-full max-h-[50px] max-w-[50px] h-[50px]"
+                      />
+                      <div className="flex flex-col justify-between">
+                        <span>
+                          <strong>{passenger.User?.name}</strong>
+                        </span>
+                        <span>{passenger.User?.course.name}</span>
+                      </div>
+                    </Link>
+                  </div>
+                );
+              })}
+            </div>
+          )}
         </div>
       </section>
     </div>

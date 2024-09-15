@@ -12,9 +12,11 @@ import { ptBR } from "date-fns/locale";
 import { Clock, DollarSign, Map, MapPin } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 export default function Post({ post }: { post: trip_type }) {
+  const router = useRouter();
   const center = { lat: -29.45553697, lng: -51.29300846 };
   const [map, setMap] = useState<google.maps.Map | null>(null);
   const [directionsResponse, setDirectionsResponse] =
@@ -47,8 +49,11 @@ export default function Post({ post }: { post: trip_type }) {
 
   return (
     <div className="flex flex-col items-center gap-2 max-w-[92%] w-full">
-      <Link
-        href={`/user/${post.driver.registrationNumber}`}
+      <div
+        onClick={(e) => {
+          e.preventDefault();
+          router.push(`/user/${post.driver.registrationNumber}`);
+        }}
         className="flex items-center justify-start gap-3 w-full"
       >
         <Image
@@ -65,7 +70,12 @@ export default function Post({ post }: { post: trip_type }) {
           </strong>
           <span>{post.driver.course.name}</span>
         </div>
-      </Link>
+      </div>
+      {/* <Link
+        href={`/user/${post.driver.registrationNumber}`}
+        className="flex items-center justify-start gap-3 w-full"
+      > */}
+      {/* </Link> */}
       <Link
         href={`/trip/${post.id}`}
         className="w-full flex flex-col gap-1 mt-3"
