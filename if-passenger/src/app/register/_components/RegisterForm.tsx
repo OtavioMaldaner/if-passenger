@@ -71,7 +71,6 @@ export default function RegisterForm({
   const cityId = cities.find((city) => city.nome == hasCity)?.id;
 
   const handleSubmitForm = async (values: z.infer<typeof formSchema>) => {
-    // console.log(submitType);
     const req = await api.post(
       "/register/user",
       {

@@ -44,13 +44,7 @@ import {
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import Cookie from "js-cookie";
-import {
-  CalendarIcon,
-  Clock,
-  Clock2,
-  DollarSign,
-  LandPlot,
-} from "lucide-react";
+import { CalendarIcon, Clock2, DollarSign, LandPlot } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
@@ -96,11 +90,13 @@ export default function CreateTripForm({
   gas_price,
   user_cars,
   default_vehicles,
+  dates,
 }: {
   addresses: address_type[];
   gas_price: number;
   user_cars: user_car_type[];
   default_vehicles: default_vehicles_type[];
+  dates: Date[];
 }) {
   const center = { lat: -29.45553697, lng: -51.29300846 };
   const getInitialDate = () => {
@@ -150,10 +146,10 @@ export default function CreateTripForm({
           price: Number(price),
           date,
           origin: Number(
-            addresses.find((address) => address.name === origin).id
+            addresses.find((address) => address.name === origin)?.id
           ),
           destination: Number(
-            addresses.find((address) => address.name === destination).id
+            addresses.find((address) => address.name === destination)?.id
           ),
           vehicle,
           notes,
@@ -172,7 +168,7 @@ export default function CreateTripForm({
 
       toast.success("Viagem criada com sucesso!");
     } catch (error) {
-      toast.error(`Erro ao criar viagem: ${error.message}`);
+      toast.error(`Erro ao criar viagem: ${error.message || ""}`);
     }
   };
 
@@ -476,7 +472,10 @@ export default function CreateTripForm({
                       selected={field.value}
                       onSelect={(date) => {
                         field.onChange(date);
-                        setTripDates([new Date(date ?? "")]);
+                        setTripDates((prevTripDates) => [
+                          ...prevTripDates,
+                          new Date(date ?? ""),
+                        ]);
                       }}
                       disabled={(date) => {
                         const dayOfWeek = date.getDay();
@@ -615,13 +614,12 @@ export default function CreateTripForm({
               <CardContent>
                 <Calendar
                   mode="multiple"
-                  selected={tripDates}
+                  selected={[...tripDates, ...dates]}
                   disabled={(date) => {
                     const dayOfWeek = date.getDay();
                     return dayOfWeek === 0 || dayOfWeek === 6;
                   }}
                   locale={ptBR}
-                  initialFocus
                 />
               </CardContent>
             </Card>

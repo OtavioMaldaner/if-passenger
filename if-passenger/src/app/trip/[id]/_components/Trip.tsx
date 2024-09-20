@@ -135,7 +135,6 @@ export default function Trip({
           provideRouteAlternatives: true,
         });
         setDirectionsResponse(results);
-        // console.log(results);
       } catch (error) {
         console.error("Error fetching directions:", error);
       }

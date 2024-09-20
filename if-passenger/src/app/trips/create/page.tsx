@@ -55,6 +55,14 @@ export default async function CreateTrip() {
     secondary_vehicles_request.data;
   const user_cars: user_car_type[] = request_car.data;
 
+  const dates_req = await api.get("/trips/user/dates", {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  const dates: Date[] = dates_req.data;
+
   return (
     <main className="flex">
       <Header>
@@ -72,6 +80,7 @@ export default async function CreateTrip() {
           gas_price={gas_price}
           user_cars={user_cars}
           default_vehicles={secondary_vehicles}
+          dates={dates}
         />
       </section>
     </main>

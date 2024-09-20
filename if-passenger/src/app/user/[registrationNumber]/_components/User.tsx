@@ -84,12 +84,7 @@ export default function User({
             variant="follow"
             size="user"
             onClick={async () => {
-              try {
-                await navigator.clipboard.writeText(window.location.href);
-                console.log("URL copied to clipboard");
-              } catch (err) {
-                console.log("Failed to copy URL: ", err);
-              }
+              await navigator.clipboard.writeText(window.location.href);
             }}
           >
             Compartilhar
