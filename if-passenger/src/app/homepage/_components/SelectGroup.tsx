@@ -1,13 +1,14 @@
 "use client";
 import { JWTToken } from "@/app/api/types";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
-  Select,
-  SelectContent,
-  SelectGroup,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+  Sheet,
+  SheetContent,
+  SheetFooter,
+  SheetHeader,
+  SheetTrigger,
+} from "@/components/ui/sheet";
+import { ChevronDown } from "lucide-react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 
@@ -35,29 +36,61 @@ export default function HeaderSelectGroup({ token }: { token: JWTToken }) {
   const pathname = usePathname();
   const { replace } = useRouter();
 
-  const selected = searchParams.get("filter") || "following";
+  // Estado para armazenar a seleção atual
+  const [selected, setSelected] = useState<string>(
+    searchParams.get("filter") || "following"
+  );
 
-  const setSelected = (value: string) => {
+  // Função que atualiza a seleção e navega com o filtro atualizado
+  const handleSelect = (value: string) => {
+    setSelected(value);
     const params = new URLSearchParams();
     params.set("filter", value);
     replace(`${pathname}?${params.toString()}`);
   };
+
   return (
-    <Select defaultValue={selected} onValueChange={setSelected}>
-      <SelectTrigger className="w-[140px] border-0 focus:outline-none">
-        <SelectValue>
-          {values.find((value) => value.value === selected)?.name || "Seguindo"}
-        </SelectValue>
-      </SelectTrigger>
-      <SelectContent>
-        <SelectGroup>
-          {values.map((value) => (
-            <SelectItem key={value.value} value={value.value}>
-              {value.name}
-            </SelectItem>
-          ))}
-        </SelectGroup>
-      </SelectContent>
-    </Select>
+    <Sheet>
+      <SheetTrigger asChild>
+        <span className="flex items-center justify-center gap-3">
+          {values
+            .find((value) => value.value === selected)
+            ?.name.substring(0, 15) || "Seguindo"}{" "}
+          <ChevronDown size={18} />
+        </span>
+      </SheetTrigger>
+      <SheetContent>
+        <SheetHeader>
+          <h3>Filtros</h3>
+          <span>
+            O filtro selecionado será utilizado para exibir as viagens
+            correspondentes no seu feed.
+          </span>
+          <span>
+            <strong>Apenas um filtro pode ser selecionado por vez.</strong>
+          </span>
+        </SheetHeader>
+        <SheetFooter className="mt-5">
+          <div className="flex flex-col gap-3">
+            <h4>Categorias:</h4>
+            {values.map((value) => (
+              <div key={value.value} className="flex items-center space-x-2">
+                <Checkbox
+                  checked={selected === value.value}
+                  onCheckedChange={() => handleSelect(value.value)}
+                  id={value.value}
+                />
+                <label
+                  htmlFor={value.value}
+                  className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                >
+                  {value.name}
+                </label>
+              </div>
+            ))}
+          </div>
+        </SheetFooter>
+      </SheetContent>
+    </Sheet>
   );
 }
